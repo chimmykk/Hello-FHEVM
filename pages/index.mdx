@@ -1,0 +1,76 @@
+---
+title: HelloFHEVM · Simple HelloFHEVM started pack
+content:
+  width: 100%
+layout: landing
+logo: false
+---
+
+import { HomePage } from 'vocs/components';
+import { VideoModal } from '../components';
+
+<div className="absolute max-w-[1120px] mx-auto w-full top-20 bottom-0 bg-[url('/colosseum-light.svg')] dark:bg-[url('/colosseum.svg')] bg-no-repeat max-sm:w-[200%] max-sm:-left-[200px] max-sm:hidden" />
+
+<div className="max-w-[1120px] mx-auto vp-doc relative px-[24px] mb-[96px] mt-[32px] md:px-0 md:mb-[64px]">
+  <div className="pt-[48px] max-sm:pt-0">
+    <div className="max-sm:px-0 flex flex-col gap-8 justify-between md:mx-auto z-0 max-md:justify-center">
+      <div className="space-y-8 max-w-[500px] flex flex-col mx-auto items-center text-center">
+    <img className="h-[102px] dark:invert-[1] max-sm:h-[60px]" src="/text-light.svg" alt="Hello FHEVM logo" />
+    <div className="font-regular text-[21px] max-sm:text-[18px] text-[#919193]">
+        Your gateway to  <span className="text-black dark:text-white">confidential</span>, 
+        <span className="text-black dark:text-white">scalable</span>, 
+        <span className="text-black dark:text-white">adaptive</span>, 
+        and <span className="text-black dark:text-white">resilient FHEVM </span> empowering you to build privacy-first dApps faster than ever.
+    </div>
+    <div className="flex justify-center flex-wrap gap-2">
+        <HomePage.Button href="/getting-started" variant="accent">Get started</HomePage.Button>
+
+        <HomePage.Button href="https://github.com/chimmykk">GitHub</HomePage.Button>
+    </div>
+</div>
+
+
+    </div>
+    <div className="flex justify-between flex-wrap mt-16 ">
+      <div className="pr-2 w-1/3 max-lg:pb-3 max-sm:px-0 max-lg:w-1/2 max-sm:w-full z-0">
+        <div className="relative w-full h-[180px] max-lg:h-[142px] overflow-hidden ">
+          <div className="border-black dark:border-white border border-solid border-opacity-10 dark:border-opacity-10 rounded-lg h-full px-5 py-8 absolute z-10 flex flex-col justify-between w-full">
+            <div className="text-xl font-medium text-black dark:text-white">Basic</div>
+            <div className="text-[17px] text-[#919193]"> Learn the fundamentals of FHEVM</div>
+            <a href="/Introduction" className="text-[17px]">See more</a>
+          </div>
+          <div className="absolute left-0 right-0 top-0 bottom-0 dark:bg-[#313136] opacity-20 z-0" />
+          <div className="absolute left-0 right-0 top-0 bottom-0 backdrop-filter backdrop-blur-[2px] z-0" />
+        </div>
+      </div>
+      <div className="px-2 w-1/3 max-lg:pb-3 max-sm:px-0 max-lg:w-1/2 max-sm:w-full z-0">
+        <div className="relative w-full h-[180px] max-lg:h-[142px]">
+          <div className="border-black dark:border-white border border-solid border-opacity-10 dark:border-opacity-10 rounded-lg h-full px-5 py-8 absolute z-10 flex flex-col justify-between w-full">
+            <div className="text-xl font-medium text-black dark:text-white">Testing</div>
+            <div>
+            <div className="text-[17px] text-[#919193]"> Learn how to write tests for simple concepts</div>
+            <a href="/test-example" className="text-[17px]">See more</a>
+            </div>
+          </div>
+          <div className="absolute left-0 right-0 top-0 bottom-0 dark:bg-[#313136] opacity-20 z-0" />
+          <div className="absolute left-0 right-0 top-0 bottom-0 backdrop-filter backdrop-blur-[2px] z-0" />
+        </div>
+      </div>
+      <div className="pl-2 w-1/3 max-sm:px-0 max-lg:w-1/2 max-sm:w-full z-0">
+        <div className="relative w-full h-[180px] max-lg:h-[142px]">
+          <div className="border-black dark:border-white border border-solid border-opacity-10 dark:border-opacity-10 rounded-lg h-full px-5 py-8 absolute z-10 flex flex-col justify-between w-full">
+            <div className="text-xl font-medium text-black dark:text-white">Applications</div>
+            <div className="text-[17px] text-[#919193]">Implementation of FHEVM to full fledge Dapps Checkout here</div>
+            <a href="https://github.com/chimmykk" className="text-[17px]" target="_blank" rel="noopener noreferrer">See more</a>
+          </div>
+          <div className="absolute left-0 right-0 top-0 bottom-0 dark:bg-[#313136] opacity-20 z-0" />
+          <div className="absolute left-0 right-0 top-0 bottom-0 backdrop-filter backdrop-blur-[2px] z-0" />
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div className="w-full flex justify-center mt-12">
+   <VideoModal videoId="rilsovideo" />
+  </div>
+</div>

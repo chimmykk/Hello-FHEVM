@@ -1,0 +1,278 @@
+# Getting Started
+
+Welcome to the **Hello FHEVM** website!  
+This guide will help you navigate through the platform and quickly start building private, encrypted smart contracts on **FHEVM** — Zama’s Fully Homomorphic Encryption–enabled EVM.
+
+Using the Project
+
+::::steps
+
+## Explore Examples:
+Here’s a modular breakdown of a simple FHEVM dice game contract
+    ```js
+    # FHEVM Hardhat Template Project Structure
+fhevm-hardhat-template/
+├── artifacts/
+├── cache/
+├── contracts/
+├── deploy/
+├── deployments/
+├── fhevmTemp/
+├── node_modules/
+├── tasks/
+├── test/
+├── types/
+├── hardhat.config.ts
+├── LICENSE
+├── package.json
+├── package-lock.json
+├── README.md
+└── tsconfig.json
+```
+
+Directory Overview
+
+- **`artifacts/`** - Compiled contract artifacts (ABIs, bytecode)
+- **`cache/`** - Hardhat compilation cache
+- **`contracts/`** - Solidity smart contracts source code
+- **`deploy/`** - Deployment scripts
+- **`deployments/`** - Deployed contract addresses and ABIs per network
+- **`fhevmTemp/`** - FHEVM-specific temporary files
+- **`node_modules/`** - Dependencies installed by npm
+- **`tasks/`** - Custom Hardhat tasks
+- **`test/`** - Contract tests (likely TypeScript/JavaScript)
+- **`types/`** - TypeScript type definitions
+- **`hardhat.config.ts`** - Hardhat configuration file
+- **`LICENSE`** - Project license
+- **`package.json`** - Project configuration and dependencies
+- **`package-lock.json`** - Locked dependency versions
+- **`README.md`** - Project documentation
+- **`tsconfig.json`** - TypeScript configuration
+
+
+
+
+
+Each snippet represents a key component, showing how traditional Solidity evolves to handle encrypted data with `euint32` and `ebool` types.
+Imports FHE library for encrypted types (euint32 for 32-bit integers, ebool for booleans). Inherits SepoliaConfig for testnet compatibility.
+``` solidity
+// [!include ~/snippets/example1.sol]
+```
+
+
+State Variables
+ Use encrypted types (euint32, ebool) for private storage.
+ In traditional Solidity, these would be uint32 and bool; here, encryption ensures only authorized users can decrypt off-chain.
+``` solidity
+// [!include ~/snippets/bool.sol]
+```
+
+Constructor
+
+This is usually same as the solidity code. Constructor Sets the deployer as owner for admin functions like withdrawals.
+``` solidity
+// [!include ~/snippets/constructor.sol]
+```
+
+View Functions (e.g., getLastDiceRoll)
+Returns encrypted values; decryption happens off-chain via fhevmjs.
+This is very similar to Getter function on solidity. but here returns opaque encrypted data for privacy.
+``` solidity
+// [!include ~/snippets/getLastDiceRoll.sol]
+```
+
+Derive Function: LogicImplementation
+
+FHE.fromExternal verifies and internalizes encrypted inputs; FHE.eq compares encrypted values.
+Players encrypt inputs off-chain (using fhevmjs), submit proofs; contract computes winner status homomorphically without revealing data.
+``` solidity
+// [!include ~/snippets/getLastDiceRoll.sol]
+```
+
+
+
+ Internal Computation: _generateDiceRoll
+Homomorphic operations (FHE.add, FHE.and) on encrypted data.
+ Generates a pseudo-random roll (1-6) entirely encrypted, unlike traditional RNG which exposes values.
+ This is with respect to a Dice Guess Puzzle game
+ ``` solidity
+// [!include ~/snippets/intcomp.sol]
+```
+
+Withdraw and Receive
+
+Similar to Solidity, perform transfer and withdrawals of assets from contracts,
+ ``` solidity
+// [!include ~/snippets/wr.sol]
+```
+
+
+Full Snippet of the smart Contract
+ ``` solidity
+// [!include ~/snippets/dicegame.sol]
+```
+
+This helps you learn FHEVM step by step and see how private computations work on-chain.
+
+
+
+---
+
+##  Smart Contract Development: FHEVM Confidential Dice Guessing Game
+
+Follow these corrected steps to build your own confidential dice guessing game on Hardhat using FHEVM.
+
+Clone the Official FHEVM Hardhat Repository
+
+Start by cloning the official FHEVM hardhat repo by Zama:
+
+```bash
+git clone https://github.com/zama-ai/fhevm-hardhat-template.git
+```
+
+Navigate to the Cloned Repository
+
+```bash
+cd fhevm-hardhat-template
+```
+
+**Alternative if you want to specify a custom location:**
+```bash
+# Navigate to your preferred directory first
+cd /your-preferred/specified-location
+
+# Then clone the repository
+git clone https://github.com/zama-ai/fhevm-hardhat-template.git
+
+# Navigate into the cloned repository
+cd fhevm-hardhat-template
+```
+
+Install Hardhat and Dependencies
+
+```bash
+npm install
+```
+
+ Configure Networks and RPC Endpoints
+
+Check the `hardhat.config.js` or `hardhat.config.ts` file and configure your networks:
+
+```javascript
+// Example network configuration
+import "@fhevm/hardhat-plugin";
+import "@nomicfoundation/hardhat-chai-matchers";
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-verify";
+import "@typechain/hardhat";
+import "hardhat-deploy";
+import "hardhat-gas-reporter";
+import type { HardhatUserConfig } from "hardhat/config";
+import { vars } from "hardhat/config";
+import "solidity-coverage";
+
+import "./tasks/accounts";
+import "./tasks/FHEDiceGame";
+
+// Run 'npx hardhat vars setup' to see the list of variables that need to be set
+
+const MNEMONIC: string = vars.get(
+  "MNEMONIC",
+  "zzzzzzzzzzz",
+);
+const INFURA_API_KEY: string = vars.get("INFURA_API_KEY", "3376a33c419a4d249d680fa54ff8b6bf");
+
+const config: HardhatUserConfig = {
+  defaultNetwork: "hardhat",
+  namedAccounts: {
+    deployer: 0,
+  },
+  etherscan: {
+    apiKey: {
+      sepolia: process.env.ETHERSCAN_API_KEY || "U42S46F9HAIY1NV5U2P186USKB6N89KEQP",
+    },
+    customChains: [
+      {
+        network: "sepolia",
+        chainId: 11155111,
+        urls: {
+          apiURL: "https://api-sepolia.etherscan.io/api",
+          browserURL: "https://sepolia.etherscan.io",
+        },
+      },
+    ],
+  },
+
+  gasReporter: {
+    currency: "USD",
+    enabled: process.env.REPORT_GAS ? true : false,
+    excludeContracts: [],
+  },
+  networks: {
+    hardhat: {
+      accounts: {
+        mnemonic: MNEMONIC,
+      },
+      chainId: 31337,
+    },
+    anvil: {
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: "m/44'/60'/0'/0/",
+        count: 10,
+      },
+      chainId: 31337,
+      url: "http://localhost:8545",
+    },
+    sepolia: {
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: "m/44'/60'/0'/0/",
+        count: 10,
+      },
+      chainId: 11155111,
+      url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
+    },
+  },
+  paths: {
+    artifacts: "./artifacts",
+    cache: "./cache",
+    sources: "./contracts",
+    tests: "./test",
+  },
+  solidity: {
+    version: "0.8.27",
+    settings: {
+      metadata: {
+        // Not including the metadata hash
+        // https://github.com/paulrberg/hardhat-template/issues/31
+        bytecodeHash: "none",
+      },
+      // Disable the optimizer when debugging
+      // https://hardhat.org/hardhat-network/#solidity-optimizer-support
+      optimizer: {
+        enabled: true,
+        runs: 800,
+      },
+      evmVersion: "cancun",
+    },
+  },
+  typechain: {
+    outDir: "types",
+    target: "ethers-v6",
+  },
+};
+
+export default config;
+
+```
+
+
+## Next Steps:
+
+After completing these setup steps, you can:
+- Create your confidential dice guessing game smart contract
+- Use FHEVM's encrypted computation capabilities
+- Deploy and test on the Sepolia Testnet
+
+Make sure to set up your environment variables (like `PRIVATE_KEY` `MNEMONIC`) in a `.env` file before deploying.

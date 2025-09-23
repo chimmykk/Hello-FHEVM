@@ -1,0 +1,40 @@
+---
+title: Installation
+sidebar_position: 2
+---
+
+import { Callout } from 'vocs/components'
+
+# Installation
+*A simple guide to setup on your local dev environment*
+
+FHEVM smart contracts are written in Solidity, just like standard Ethereum contracts, but run on an FHE-enabled EVM that supports Fully Homomorphic Encryption. This guide helps you set up everything you need to build and test confidential smart contracts locally.
+
+## Prerequisites
+
+- A basic understanding of Solidity library and Ethereum
+- Node.js & npm
+- Hardhat (Development Framework)
+- FHEVM SDK & Hardhat Plugin
+- Infura API Key: Sign up at infura.io for Sepolia RPC access
+
+## Install a Node.js LTS version
+
+Ensure that Node.js is installed on your machine.
+
+Download and install the recommended LTS (Long-Term Support) version from the official website.
+
+**Use an even-numbered version (e.g., v18.x, v20.x)**
+
+Hardhat does not support odd-numbered Node.js versions. If you're using one (e.g., v21.x, v23.x), Hardhat will display a persistent warning message and may behave unexpectedly.
+
+To verify your installation:
+
+```bash
+node -v
+npm -v
+```
+
+<Callout type="info">
+  Content  Refer to [Zama Docs](https://www.zama.ai/developer-hub) for more details.
+</Callout>
