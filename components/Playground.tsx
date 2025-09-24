@@ -60,7 +60,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ okashiID }) => {
 
 {!isLoading && (
         <div className='absolute right-0 w-full'>
-         <a href={`https://okashi.dev/playground/${okashiID}`} target='_blank' style={buttonStyle}>
+         <a href={``} target='_blank' style={buttonStyle}>
             <span>
               <OkashiSvg style={{ width: '20px', height: '24px', color: '#fff' }} />
             </span>
@@ -78,7 +78,7 @@ export const Playground: React.FC<PlaygroundProps> = ({ okashiID }) => {
           minHeight: '600px',
           border: 'none',
         }}
-        src={`https://sandbox.sorobanexamples.xyz/playground/${okashiID}`}
+        src={``}
         onLoad={() => setTimeout(() => setIsLoading(false), 1000)}
         title="Okashi Playground"
       />

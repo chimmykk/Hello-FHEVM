@@ -21,7 +21,7 @@ const sidebar = [
     {
         text: 'Misc',
         items: [
-            { text: 'What can i do next?', link: '/basic-counter-contract' },
+            { text: 'What can i do next?', link: '/misc' },
       
         ],
     },
