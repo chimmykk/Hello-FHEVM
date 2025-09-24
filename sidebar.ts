@@ -18,12 +18,13 @@ const sidebar = [
         ],
     },
 
-    {
-        text: 'Testing',
+ {
+        text: 'How it works',
         items: [
-            { text: 'Test Example', link: '/test-example' },
+            { text: 'Brief', link: '/test-example' },
        
         ],
+
     },
   
   

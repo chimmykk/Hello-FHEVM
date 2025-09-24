@@ -1,6 +1,377 @@
-# Testing of Smart Contracts Examples
+# FHEVM Dice Game DApp 🎲
+Brief and Full summary
 
-FHEVM stands for Fully Homomorphic Encryption Virtual Machine. It is a technology that makes it possible to run confidential smart contracts on EVM-compatible blockchains and networks.
+A privacy-preserving dice guessing game built with **Zama's FHEVM (Fully Homomorphic Encryption Virtual Machine)** technology. Players can make encrypted guesses and roll dice with complete privacy - only they can decrypt their own results.
 
-In most blockchains, every input and output is visible to everyone. This transparency is useful for trust and record-keeping, but there are times when applications need privacy, such as voting, identity, or financial data.
+## Project Structure
 
+```
+fhevm-dice-dapp/
+├── 📁 contracts/
+│   └── FHEDiceGame.sol           # Main smart contract with FHE logic
+├── 📁 frontend/
+│   ├── 📁 src/
+│   │   ├── 📁 components/        # React components
+│   │   │   ├── Header.js         # App header
+│   │   │   ├── WalletConnect.js  # Wallet connection UI
+│   │   │   ├── PlayDice.js       # Dice gameplay interface
+│   │   │   ├── DiceResults.js    # Results display & decryption
+│   │   │   ├── ContractInfo.js   # Contract information
+│   │   │   ├── Footer.js         # App footer
+│   │   │   └── ...
+│   │   ├── 📁 hooks/            # Custom React hooks
+│   │   │   ├── useWallet.js      # Wallet connection logic
+│   │   │   ├── useDiceGame.js    # Contract interaction
+│   │   │   └── useToast.js       # Notification system
+│   │   ├── App.js               # Main React app
+│   │   ├── App.css              # Styling
+│   │   └── index.js             # Entry point
+│   ├── package.json             # Frontend dependencies
+│   └── public/                  # Static assets
+├── 📁 tasks/
+│   └── FHEDiceGame.ts           # Hardhat tasks for testing
+├── 📁 test/
+│   └── FHEDiceGame.ts           # Contract tests
+├── 📁 deploy/
+│   └── deploy.ts                # Deployment scripts
+├── hardhat.config.ts            # Hardhat configuration
+├── package.json                 # Project dependencies
+└── README.md                    # This file
+```
+
+##  Game Overview
+
+The **FHEVM Dice Game** is a privacy-first gambling DApp where:
+
+1. **Players** pick a number (1-6) or let the system choose randomly
+2. **Entropy** is generated through mouse movement for true randomness
+3. **Encryption** happens client-side using FHEVM SDK
+4. **Computation** occurs on-chain with encrypted values
+5. **Results** remain private until players decrypt them
+
+###  Privacy Features
+
+- **Encrypted Guesses**: Your guess is encrypted before submission
+- **Encrypted Dice Rolls**: Generated on-chain using encrypted seeds
+- **Private Results**: Only you can decrypt your game outcomes
+- **Verifiable Fairness**: Cryptographic proofs ensure game integrity
+
+## Architecture Overview
+![Flowchart](https://res.cloudinary.com/deapg3k8f/image/upload/v1758706002/arch1_dclalx.png)
+
+
+##  Complete Encryption & Computation Flow
+
+### 1. **Entropy Collection & Seed Generation**
+
+![Flowchart](https://res.cloudinary.com/deapg3k8f/image/upload/v1758708781/data1_kktvpp.png)
+
+**Implementation Details:**
+```javascript
+// Mouse entropy collection in PlayDice.js
+const startEntropyCapture = () => {
+  const onMove = (e) => {
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    entropyRef.current.push(`${x},${y},${e.timeStamp}`);
+  };
+  
+  // Collect for 2 seconds
+  setTimeout(() => {
+    const data = entropyRef.current.join('|');
+    const hash = hash32(data); // FNV-1a hash
+    const seedNum = hash % 1000000007; // Prime modulo
+    setSeed(String(seedNum));
+  }, 2000);
+};
+```
+
+### 2. **Client-Side Encryption Process**
+
+![Flowchart](https://res.cloudinary.com/deapg3k8f/image/upload/v1758706427/e6711ab2-d5b3-4d2e-a97e-cb24587e7956_xynru1.png)
+**Code Implementation:**
+```javascript
+// Encryption in useDiceGame.js hook
+const playDice = async (seedNumber, guessNumber) => {
+  // Initialize FHEVM SDK
+  await window.relayerSDK.initSDK();
+  const config = { ...window.relayerSDK.SepoliaConfig, network: window.ethereum };
+  const fhevm = await window.relayerSDK.createInstance(config);
+
+  // Encrypt seed
+  const seedInput = await fhevm.createEncryptedInput(contractAddress, account);
+  await seedInput.add32(seedNumber);
+  const seedEnc = await seedInput.encrypt();
+
+  // Encrypt guess
+  const guessInput = await fhevm.createEncryptedInput(contractAddress, account);
+  await guessInput.add32(guessNumber);
+  const guessEnc = await guessInput.encrypt();
+
+  // Submit to contract
+  const tx = await contract.playDice(
+    seedEnc.handles[0], seedEnc.inputProof,
+    guessEnc.handles[0], guessEnc.inputProof,
+    { value: entryFee }
+  );
+};
+```
+
+### 3. **On-Chain FHE Computation**
+
+![Flowchart](https://res.cloudinary.com/deapg3k8f/image/upload/v1758707622/ChatGPT_Image_Sep_24_2025_03_23_21_PM_boz3is.png)
+
+**Smart Contract Logic:**
+```solidity
+function playDice(
+    externalEuint32 inputSeed,
+    bytes calldata seedProof,
+    externalEuint32 inputGuess,
+    bytes calldata guessProof
+) external payable {
+    // Convert external encrypted inputs
+    euint32 encryptedSeed = FHE.fromExternal(inputSeed, seedProof);
+    euint32 encryptedGuess = FHE.fromExternal(inputGuess, guessProof);
+
+    // Store encrypted values
+    _playerGuess = encryptedGuess;
+    _lastDiceRoll = _generateDiceRoll(encryptedSeed);
+
+    // FHE computation: Check if player won
+    _isWinner = FHE.eq(_lastDiceRoll, _playerGuess);
+
+    // Grant decryption permissions
+    FHE.allow(_lastDiceRoll, msg.sender);
+    FHE.allow(_playerGuess, msg.sender);
+    FHE.allow(_isWinner, msg.sender);
+}
+```
+
+### 4. **Verifiable Fair Dice Generation**
+
+The dice generation uses a deterministic but unpredictable algorithm:
+
+```solidity
+function _generateDiceRoll(euint32 seed) internal returns (euint32) {
+    euint32 salt = FHE.asEuint32(42);           // Fixed salt
+    euint32 combined = FHE.add(seed, salt);      // Combine with seed
+    euint32 mask = FHE.asEuint32(7);            // Mask for modulo
+    euint32 masked = FHE.and(combined, mask);    // Apply mask
+    euint32 one = FHE.asEuint32(1);             // Add 1 (shift 0-7 to 1-8)
+    euint32 result = FHE.add(masked, one);       // Get 1-8 range
+    euint32 six = FHE.asEuint32(6);             // Cap at 6
+    return FHE.min(result, six);                 // Return 1-6
+}
+```
+
+**Why This Is Fair:**
+- **Deterministic**: Same seed always produces same result
+- **Unpredictable**: Player provides seed via mouse entropy
+- **Transparent**: Algorithm is public on blockchain
+- **Cryptographically Secure**: FHE operations prevent manipulation
+
+### 5. **Decryption & Result Verification**
+
+![Flowchart](https://res.cloudinary.com/deapg3k8f/image/upload/v1758707893/dia4_b4wn7i.png)
+
+**Decryption Implementation:**
+```javascript
+const userDecryptValue = async (ciphertextHandle, valueType) => {
+  // Initialize FHEVM instance
+  const instance = await window.relayerSDK.createInstance(config);
+  
+  // Generate keypair for decryption
+  const keypair = instance.generateKeypair();
+  
+  // Create EIP-712 signature for authorization
+  const eip712 = instance.createEIP712(keypair.publicKey, ...);
+  const signature = await signer.signTypedData(eip712.domain, eip712.types, eip712.message);
+  
+  // Perform decryption
+  const result = await instance.userDecrypt(
+    [{ handle: ciphertextHandle, contractAddress }],
+    keypair.privateKey,
+    keypair.publicKey,
+    signature,
+    ...
+  );
+  
+  return valueType === 'bool' ? Boolean(result[ciphertextHandle]) : Number(result[ciphertextHandle]);
+};
+```
+
+##  Security & Privacy Features
+
+### **1. Input Privacy**
+- Player guesses are encrypted client-side
+- Seeds are generated from unpredictable mouse movement
+- No plaintext values are transmitted
+
+### **2. Computation Privacy**
+- All operations happen on encrypted data
+- Contract never sees plaintext values
+- Results are computed homomorphically
+
+### **3. Access Control**
+```solidity
+// Only the player can decrypt their own results
+FHE.allow(_lastDiceRoll, msg.sender);
+FHE.allow(_playerGuess, msg.sender);
+FHE.allow(_isWinner, msg.sender);
+```
+
+### **4. Fairness Verification**
+```javascript
+// Frontend tracks fairness proof
+setFairness({ 
+  seed: seedNumber, 
+  guess: guessNumber, 
+  commitment: sha256(seed),
+  txHash: tx.hash 
+});
+```
+
+## 🚀 Technical Implementation
+
+### **Frontend Architecture**
+
+**Key Components:**
+- **PlayDice.js**: Handles user interaction, entropy collection, and game submission
+- **DiceResults.js**: Manages encrypted result display and decryption
+- **useDiceGame.js**: Custom hook managing contract interactions and FHEVM SDK
+- **useWallet.js**: Wallet connection and network management
+
+**State Management Flow:**
+```javascript
+// Game state in useDiceGame hook
+const [encryptedState, setEncryptedState] = useState({
+  lastDiceRoll: '0x',
+  playerGuess: '0x', 
+  winnerStatus: '0x'
+});
+
+const [decryptedState, setDecryptedState] = useState({
+  lastDiceRoll: null,
+  playerGuess: null,
+  winnerStatus: null
+});
+```
+
+### **Smart Contract Architecture**
+
+**Core State Variables:**
+```solidity
+euint32 private _lastDiceRoll;    // Encrypted dice result
+euint32 private _playerGuess;     // Encrypted player guess  
+ebool private _isWinner;          // Encrypted win status
+```
+
+**Access Pattern:**
+1. **Play**: Submit encrypted inputs with entry fee
+2. **Compute**: Generate dice roll and check winner (all encrypted)
+3. **Store**: Save encrypted results with player access permissions
+4. **Decrypt**: Player can decrypt their own results off-chain
+
+## 📋 Prerequisites & Setup
+
+### **Requirements:**
+- Node.js 18+ (LTS version)
+- MetaMask wallet
+- Sepolia testnet ETH
+- Hardhat development framework
+
+### **Installation:**
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd fhevm-dice-dapp
+
+# Install dependencies
+npm install
+
+# Setup environment variables
+cp .env.example .env
+# Add your MNEMONIC and INFURA_API_KEY
+
+# Compile contracts
+npx hardhat compile
+
+# Run tests
+npx hardhat test
+
+# Deploy to Sepolia
+npx hardhat deploy --network sepolia
+```
+
+### **Frontend Setup:**
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## 🎮 How to Play
+
+1. **Connect Wallet**: Connect MetaMask to Sepolia testnet
+2. **Generate Entropy**: Hover mouse over dice area for 2 seconds
+3. **Make Guess**: Click a dice face (1-6) or let system choose randomly
+4. **Roll Dice**: Click "Roll Dice" to submit encrypted guess
+5. **Wait**: Transaction processes on blockchain
+6. **Decrypt**: Click "Decrypt All" to reveal results
+7. **Verify**: Check if your guess matched the encrypted dice roll!
+
+## 🔍 Testing & Verification
+
+### **Unit Tests:**
+```bash
+npx hardhat test
+```
+
+### **Manual Testing:**
+```bash
+# Play game via CLI
+npx hardhat --network sepolia task:play-dice --guess 4 --seed 12345
+
+# Check results
+npx hardhat --network sepolia task:dice-result
+```
+
+### **Frontend Testing:**
+- Test wallet connection
+- Verify entropy collection
+- Check encryption/decryption flow
+- Validate game fairness
+
+##  Live Demo
+
+**Deployed Contract**: `0xA6915c97f44f1708e37dD871CCE991fD6D45E943` (Sepolia)
+**Frontend**: [https://hello-fhevm-game.vercel.app](https://hello-fhevm-game.vercel.app)
+
+## Learn More
+
+- **[Zama Documentation](https://docs.zama.ai/fhevm)**: Complete FHEVM guide
+- **[FHEVM Hardhat Plugin](https://github.com/zama-ai/fhevm-hardhat-template)**: Development tools
+- **[FHE Solidity Library](https://docs.zama.ai/fhevm/fundamentals/solidity)**: Smart contract development
+
+##  Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+##  License
+
+MIT License - see LICENSE file for details.
+
+##  Acknowledgments
+
+- **Zama Team**: For the incredible FHEVM technology
+- **Ethereum Foundation**: For the underlying blockchain infrastructure
+- **Open Source Community**: For the tools and libraries used
+
+---
+
+*Built with ❤️ using Zama FHEVM - Where Privacy Meets Smart Contracts*
