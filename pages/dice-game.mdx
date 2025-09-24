@@ -468,7 +468,7 @@ FHEDiceGame playDice(guess=6, seed=65463) succeeded!
 
 ## Now the next step is to figure out the guess you made and the outcome of the computation of fhevm where
 we used seed and salt to randomize the outcome if it match, you're a winner else loser!
-Refer: Line of Code 73-83 on FHEDiceGame.solid
+Refer: Line of Code 73-83 on FHEDiceGame.sol
         ``` solidity
          /// @notice Generate a dice roll from encrypted seed
     function _generateDiceRoll(euint32 seed) internal returns (euint32) {
@@ -486,4 +486,4 @@ Refer: Line of Code 73-83 on FHEDiceGame.solid
 
 ## Next Steps / chapter  you will figure out how to Decrypt or check for the result.
 
-Using FHevm.js you can decrypt the result and check if you win or loser
+Using FHevm.js you can decrypt the result and check if you win or lose

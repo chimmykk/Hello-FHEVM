@@ -47,7 +47,8 @@ frontend/
 
 
 ### Initiate a new project
-
+Under the same root folder fhevm-hardhat-template 
+Now proceed to initiate a new react project
 ``` js
 npx create-react-app frontend
 cd frontend
@@ -55,8 +56,6 @@ cd frontend
 Now Install the required dependencies
 ``` js
 npm install @zama-fhe/relayer-sdk@^0.2.0 ethers@^6.15.0
-npm install react@^19.1.1 react-dom@^19.1.1
-npm install --save-dev @testing-library/dom@^10.4.1 @testing-library/jest-dom@^6.8.0 @testing-library/react@^16.3.0 @testing-library/user-event@^13.5.0
 ```
 
 ### Update the project code
@@ -133,16 +132,14 @@ to
 import React, { useState } from 'react';
 import Header from './components/Header';
 import WalletConnect from './components/WalletConnect';
-// Lottery-specific components removed from rendering
-// import LotteryStats from './components/LotteryStats';
-// import BuyTicket from './components/BuyTicket';
-// import WinnerDisplay from './components/WinnerDisplay';
+
+
 
 import ContractInfo from './components/ContractInfo';
 import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
 import StatusMessage from './components/StatusMessage';
-// import { useLottery } from './hooks/useLottery';
+
 import { useWallet } from './hooks/useWallet';
 import { useToast } from './hooks/useToast';
 import { useDiceGame } from './hooks/useDiceGame';
@@ -161,6 +158,7 @@ function App() {
     loading,
     encryptedState,
     decryptedState,
+    fairness,
     playDice,
     refreshEncryptedState,
     decryptLastDiceRoll,
@@ -173,7 +171,9 @@ function App() {
       <div className="container">
         <div className="app-content">
           <Header />
-
+          <div className="section contract-section">
+                <ContractInfo contractAddress={contractAddress} />
+              </div>
           <ToastContainer messages={messages} />
 
           {/* Wallet Connection Section */}
@@ -204,12 +204,11 @@ function App() {
                   onDecryptGuess={decryptPlayerGuess}
                   onDecryptWinner={decryptWinnerStatus}
                   loading={loading}
+                  fairness={fairness}
                 />
               </div>
 
-              <div className="section contract-section">
-                <ContractInfo contractAddress={contractAddress} />
-              </div>
+          
             </>
           )}
         </div>
@@ -223,7 +222,7 @@ export default App;
 ```
 Under src/Index.js
 ```js
-import React from 'react';
+iimport React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.js';
 import './App.css';
@@ -234,7 +233,6 @@ root.render(
     <App />
   </React.StrictMode>
 );
-
 ```
 
 ### Now create a Component on the root of the project of src, as src/components
@@ -258,58 +256,85 @@ ContractInfo.js
 ``` js
 const ContractInfo = ({ contractAddress }) => {
   return (
-    <div className="card-secondary">
-      <h3 style={{ marginBottom: '12px', fontSize: '1.125rem', color: 'var(--text-secondary)' }}>📋 Contract Information</h3>
-      <hr style={{ borderColor: 'var(--border-light)', marginBottom: '16px' }} />
+    <div className="card-secondary" style={{ padding: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {/* Contract Address */}
+        <div style={{ 
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '6px 10px',
+          background: 'var(--bg-tertiary)',
+          border: '1px solid var(--border-light)',
+          borderRadius: '6px'
+        }}>
+          <span style={{ color: 'var(--text-secondary)', fontWeight: '600', fontSize: '0.8rem' }}>
+            Contract:
+          </span>
+          <a
+            href={`https://sepolia.etherscan.io/address/${contractAddress}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontFamily: 'monospace',
+              color: 'var(--primary-blue)',
+              fontSize: '0.8rem',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              padding: '3px 6px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '4px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'var(--bg-tertiary)';
+              e.target.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'var(--bg-card)';
+              e.target.style.transform = 'translateY(0)';
+            }}
+          >
+            {contractAddress.slice(0, 8)}...{contractAddress.slice(-6)}
+          </a>
+        </div>
 
-      {/* Educational Content */}
-      <div style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)', padding: '12px', borderRadius: '8px', marginBottom: '16px', border: '1px solid var(--info-color)' }}>
-        <h4 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: 'var(--info-color)' }}>🔐 What is FHEVM?</h4>
-        <p style={{ margin: '0', fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-          <strong>Fully Homomorphic Encryption Virtual Machine</strong> enables computations on encrypted data without decryption.
-          Your lottery ticket is mathematically encrypted - only you know your number!
-        </p>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <span style={{ color: 'var(--text-secondary)' }}>Contract Address:</span>
-        <a
-          href={`https://sepolia.etherscan.io/address/${contractAddress}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            fontFamily: 'monospace',
-            color: 'var(--primary-color)',
-            fontSize: '0.875rem',
-            textDecoration: 'none',
-            cursor: 'pointer'
-          }}
-          onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-          onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
-        >
-          {contractAddress.slice(0, 10)}...{contractAddress.slice(-8)}
-        </a>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <span style={{ color: 'var(--text-secondary)' }}>Network:</span>
-        <span className="badge" style={{ background: 'var(--secondary-color)', padding: '2px 8px', fontSize: '0.75rem' }}>
-          Sepolia Testnet
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <span style={{ color: 'var(--text-secondary)' }}>Technology:</span>
-        <span className="badge" style={{ background: 'var(--warning-color)', padding: '2px 8px', fontSize: '0.75rem' }}>
-          🔒 FHEVM
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span style={{ color: 'var(--text-secondary)' }}>Privacy:</span>
-        <span className="badge" style={{ background: 'var(--success-color)', padding: '2px 8px', fontSize: '0.75rem' }}>
-          🛡️ Mathematical
-        </span>
+        {/* Network and Tech badges in one row */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span className="badge" style={{ 
+            background: 'var(--bg-card)', 
+            color: 'var(--text-primary)', 
+            padding: '2px 6px', 
+            fontSize: '0.7rem', 
+            border: '1px solid var(--border-light)',
+            borderRadius: '4px'
+          }}>
+            🌐 Sepolia
+          </span>
+          
+          <div style={{ display: 'flex', gap: '4px' }}>
+            <span className="badge" style={{ 
+              background: 'var(--bg-card)', 
+              border: '1px solid var(--border-light)', 
+              fontSize: '0.65rem', 
+              padding: '1px 5px',
+              borderRadius: '4px'
+            }}>🔒 FHEVM</span>
+            <span className="badge" style={{ 
+              background: 'var(--bg-card)', 
+              border: '1px solid var(--border-light)', 
+              fontSize: '0.65rem', 
+              padding: '1px 5px',
+              borderRadius: '4px'
+            }}>🛡️ Private</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -324,20 +349,17 @@ const Header = () => {
   return (
     <header className="header">
       <div className="header-content">
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
-          <span className="badge">FHEVM</span>
-          <span className="badge">Private</span>
-        </div>
-        <h1 className="title" style={{
-          background: 'linear-gradient(90deg, var(--secondary-color), var(--primary-color))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: '10px', 
+          marginBottom: '1px'
         }}>
-          Neon Dice — Confidential Rolls
+        </div>
+        <h1 className="title">
+           Dice — Confidential Rolls
         </h1>
-        <p className="subtitle">
-          Pick a face or go random. We encrypt your guess client-side and compute on-chain.
-        </p>
+   
       </div>
     </header>
   );
@@ -370,79 +392,289 @@ const DiceResults = ({
   onDecryptRoll,
   onDecryptGuess,
   onDecryptWinner,
-  loading
+  loading,
+  fairness
 }) => {
+  const handleDecryptAll = async () => {
+    try {
+      await onDecryptRoll();
+      await onDecryptGuess();
+      await onDecryptWinner();
+    } catch (err) {
+      // swallow; individual handlers already toast errors
+    }
+  };
   return (
-    <div className="card" style={{ maxWidth: '600px', margin: '16px auto 0' }}>
-      <h3 style={{ marginBottom: '12px', fontSize: '1.1rem', color: 'var(--text-primary)' }}>🔐 Encrypted Results</h3>
+    <div className="card" style={{ maxWidth: '90rem', margin: '6.6px auto 0' }}>
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '24px'
+      }}>
+        <h3 style={{ 
+          fontSize: '1.5rem', 
+          color: 'var(--text-primary)', 
+          fontWeight: 700,
+          marginBottom: '8px'
+        }}>
+          🔐 Encrypted Results
+        </h3>
+        <p style={{ 
+          color: 'var(--text-secondary)', 
+          fontSize: '0.9rem',
+          margin: 0
+        }}>
+          Decrypt your results to see the outcome
+        </p>
+      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Last Dice Roll (enc)</div>
-            <div style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{encrypted.lastDiceRoll}</div>
-          </div>
-          <div>
-            <button
-              onClick={onDecryptRoll}
-              disabled={loading}
-              className={`btn ${loading ? 'btn-loading' : 'btn-secondary'}`}
-              style={{ fontSize: '0.8rem' }}
-            >
-              🔓 Decrypt
-            </button>
-            {decrypted.lastDiceRoll != null && (
-              <div style={{ marginTop: '4px', textAlign: 'right' }}>➡️ {decrypted.lastDiceRoll}</div>
-            )}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Your Guess (enc)</div>
-            <div style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{encrypted.playerGuess}</div>
-          </div>
-          <div>
-            <button
-              onClick={onDecryptGuess}
-              disabled={loading}
-              className={`btn ${loading ? 'btn-loading' : 'btn-secondary'}`}
-              style={{ fontSize: '0.8rem' }}
-            >
-              🔓 Decrypt
-            </button>
-            {decrypted.playerGuess != null && (
-              <div style={{ marginTop: '4px', textAlign: 'right' }}>➡️ {decrypted.playerGuess}</div>
-            )}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Winner Status (enc)</div>
-            <div style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{encrypted.winnerStatus}</div>
-          </div>
-          <div>
-            <button
-              onClick={onDecryptWinner}
-              disabled={loading}
-              className={`btn ${loading ? 'btn-loading' : 'btn-secondary'}`}
-              style={{ fontSize: '0.8rem' }}
-            >
-              🔓 Decrypt
-            </button>
-            {decrypted.winnerStatus != null && (
-              <div style={{ marginTop: '4px', textAlign: 'right' }}>
-                ➡️ {decrypted.winnerStatus ? '🎉 Winner' : 'Not winner'}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ 
+          padding: '20px',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-light)',
+          borderRadius: '16px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            gap: '20px'
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ 
+                fontSize: '0.9rem', 
+                color: 'var(--text-secondary)',
+                fontWeight: '600',
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                🎲 Last Dice Roll (encrypted)
               </div>
-            )}
+              <div style={{ 
+                fontFamily: 'monospace', 
+                fontSize: '0.8rem',
+                color: 'var(--text-primary)',
+                background: 'var(--bg-tertiary)',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-light)',
+                wordBreak: 'break-all',
+                lineHeight: '1.4'
+              }}>
+                {encrypted.lastDiceRoll}
+              </div>
+              {decrypted.lastDiceRoll != null && (
+                <div style={{ 
+                  marginTop: '10px',
+                  textAlign: 'left',
+                  padding: '8px 12px',
+                  background: 'var(--success-green)',
+                  color: 'var(--text-white)',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                }}>
+                  ➡️ {decrypted.lastDiceRoll}
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button
+                onClick={onDecryptRoll}
+                disabled={loading}
+                className={`btn ${loading ? 'btn-loading' : 'btn-secondary'}`}
+                style={{ 
+                  fontSize: '0.9rem',
+                  padding: '10px 20px',
+                  minWidth: '120px'
+                }}
+              >
+                🔓 Decrypt
+              </button>
+            </div>
           </div>
+        </div>
+
+        <div style={{ 
+          padding: '20px',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-light)',
+          borderRadius: '16px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            gap: '20px'
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ 
+                fontSize: '0.9rem', 
+                color: 'var(--text-secondary)',
+                fontWeight: '600',
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                🎯 Your Guess (encrypted)
+              </div>
+              <div style={{ 
+                fontFamily: 'monospace', 
+                fontSize: '0.8rem',
+                color: 'var(--text-primary)',
+                background: 'var(--bg-tertiary)',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-light)',
+                wordBreak: 'break-all',
+                lineHeight: '1.4'
+              }}>
+                {encrypted.playerGuess}
+              </div>
+              {decrypted.playerGuess != null && (
+                <div style={{ 
+                  marginTop: '10px',
+                  textAlign: 'left',
+                  padding: '8px 12px',
+                  background: 'var(--success-green)',
+                  color: 'var(--text-white)',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                }}>
+                  ➡️ {decrypted.playerGuess}
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button
+                onClick={onDecryptGuess}
+                disabled={loading}
+                className={`btn ${loading ? 'btn-loading' : 'btn-secondary'}`}
+                style={{ 
+                  fontSize: '0.9rem',
+                  padding: '10px 20px',
+                  minWidth: '120px'
+                }}
+              >
+                🔓 Decrypt
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ 
+          padding: '20px',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-light)',
+          borderRadius: '16px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            gap: '20px'
+          }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ 
+                fontSize: '0.9rem', 
+                color: 'var(--text-secondary)',
+                fontWeight: '600',
+                marginBottom: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                🏆 Winner Status (encrypted)
+              </div>
+              <div style={{ 
+                fontFamily: 'monospace', 
+                fontSize: '0.8rem',
+                color: 'var(--text-primary)',
+                background: 'var(--bg-tertiary)',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-light)',
+                wordBreak: 'break-all',
+                lineHeight: '1.4'
+              }}>
+                {encrypted.winnerStatus}
+              </div>
+              {decrypted.winnerStatus != null && (
+                <div style={{ 
+                  marginTop: '10px',
+                  textAlign: 'left',
+                  padding: '8px 12px',
+                  background: decrypted.winnerStatus ? 'var(--success-green)' : 'var(--error-red)',
+                  color: 'var(--text-white)',
+                  borderRadius: '8px',
+                  fontWeight: '600',
+                  fontSize: '1rem',
+                }}>
+                  ➡️ {decrypted.winnerStatus ? '🎉 Winner!' : '❌ Not winner'}
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button
+                onClick={onDecryptWinner}
+                disabled={loading}
+                className={`btn ${loading ? 'btn-loading' : 'btn-secondary'}`}
+                style={{ 
+                  fontSize: '0.9rem',
+                  padding: '10px 20px',
+                  minWidth: '120px'
+                }}
+              >
+                🔓 Decrypt
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
+          <button
+            onClick={handleDecryptAll}
+            disabled={loading}
+            className={`btn ${loading ? 'btn-loading' : 'btn-primary'}`}
+            style={{ minWidth: '160px', height: '40px', fontSize: '0.95rem', fontWeight: 600 }}
+          >
+            {loading ? 'Decrypting...' : 'Decrypt All'}
+          </button>
         </div>
       </div>
+      
+      {fairness && (
+        <div style={{ 
+          padding: '16px',
+          background: 'var(--bg-tertiary)',
+          border: '1px solid var(--border-light)',
+          borderRadius: '12px',
+          marginTop: '20px'
+        }}>
+          <div style={{ fontWeight: 600, marginBottom: '8px', color: 'var(--text-primary)' }}>✅ Fairness Proof</div>
+          <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            Seed used: <span style={{ color: 'var(--text-primary)' }}>{fairness.seed}</span> • Guess: <span style={{ color: 'var(--text-primary)' }}>{fairness.guess}</span>
+          </div>
+          <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--bg-card)', padding: '8px 12px', border: '1px solid var(--border-light)', borderRadius: '6px', wordBreak: 'break-all', marginBottom: '8px' }}>
+            commitment (sha256(seed)) = {fairness.commitment}
+          </div>
+          {fairness.txHash && (
+            <a href={`https://sepolia.etherscan.io/tx/${fairness.txHash}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.85rem' }}>
+              View transaction ↗
+            </a>
+          )}
+        </div>
+      )}
     </div>
   );
 };
-
 export default DiceResults;
 ```
 PastRounds.js
@@ -542,28 +774,43 @@ Footer.js
 ```js
 const Footer = () => {
   return (
-    <footer className="footer" style={{ backdropFilter: 'blur(8px)' }}>
-      <div className="footer-content" style={{ justifyContent: 'center', gap: '16px' }}>
-        <div className="footer-text" style={{ textAlign: 'center' }}>
-          <p>Neon Dice • Built with React + FHEVM</p>
+    <footer className="footer" style={{ padding: '8px 0', margin: '8px 0 0' }}>
+      <div className="footer-content" style={{ 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        gap: '12px',
+        padding: '0'
+      }}>
+        <div className="footer-text">
+          <p style={{
+            fontSize: '0.75rem',
+            color: 'var(--text-secondary)',
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '6px'
+          }}>
+            <span>🎲 Dice</span>
+            <span>•</span>
+            <span>FHEVM</span>
+          </p>
         </div>
-        <div className="footer-links" style={{ gap: '12px' }}>
+        <div className="footer-links" style={{ 
+          gap: '8px',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
           <a
-            href="https://github.com/NecipAkgz/hello-fhevm-lottery"
+            href="https://github.com/chimmykk"
             target="_blank"
             rel="noopener noreferrer"
             className="footer-link"
+            style={{ fontSize: '0.75rem' }}
           >
             GitHub
           </a>
-          <a
-            href="https://x.com/LanceNeop"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="footer-link"
-          >
-            Twitter
-          </a>
+         
         </div>
       </div>
     </footer>
@@ -642,11 +889,33 @@ const PlayDice = ({ loading, onPlay }) => {
   const disabled = loading || !seed || Number(guess) < 1 || Number(guess) > 6;
 
   return (
-    <div className="card" style={{ maxWidth: '640px', margin: '0 auto', padding: '24px' }}>
-      <h3 style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 500, marginBottom: '16px' }}>Roll the dice and see what you get!</h3>
+    <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '24px'
+      }}>
+        <h3 style={{ 
+          fontSize: '1.5rem', 
+          color: 'var(--text-primary)', 
+          fontWeight: 700, 
+          marginBottom: '8px'
+        }}>
+          🎲 Roll the Dice
+        </h3>
+        <p style={{ 
+          color: 'var(--text-secondary)', 
+          fontSize: '1rem',
+          margin: 0
+        }}>
+          Choose your number or let fate decide
+        </p>
+      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
-        <div className="dice-stage" onMouseEnter={() => { if (!capturing && !entropyReady) startEntropyCapture(); }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
+        <div 
+          className="dice-stage" 
+          onMouseEnter={() => { if (!capturing && !entropyReady) startEntropyCapture(); }}
+        >
           <div
             className={`dice-cube ${rolling ? 'dice-rolling' : ''}`}
             style={{
@@ -670,13 +939,22 @@ const PlayDice = ({ loading, onPlay }) => {
         </div>
 
         {/* Guess selector: click chips to choose face */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {faces.map(f => (
+        <div style={{ 
+          display: 'flex', 
+          gap: '12px', 
+          flexWrap: 'wrap',
+          justifyContent: 'center'
+        }}>
+          {faces.map((f) => (
             <button
               key={f}
               onClick={() => { setGuess(f); setCurrentFace(f); setUserPicked(true); }}
               className={`btn ${guess === f ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ padding: '6px 10px' }}
+              style={{ 
+                padding: '12px 16px',
+                fontSize: '2rem', // Increased from 1.2rem to 2rem
+                minWidth: '60px'
+              }}
               disabled={loading}
             >
               {['⚀','⚁','⚂','⚃','⚄','⚅'][f-1]}
@@ -685,31 +963,70 @@ const PlayDice = ({ loading, onPlay }) => {
         </div>
 
         {/* Entropy indicator */}
-        <div style={{ width: '100%', maxWidth: '520px' }}>
-          <div style={{ height: '44px', position: 'relative' }}>
-            <button
-              onClick={async () => {
-                // If user didn't pick, choose random face now
-                const chosen = userPicked ? guess : (Math.floor(Math.random() * 6) + 1);
-                if (!userPicked) {
-                  setGuess(chosen);
-                  setCurrentFace(chosen);
-                }
-                // ensure some extra movement during roll
-                setRolling(true);
-                const timer = setInterval(() => setCurrentFace(prev => (prev % 6) + 1), 90);
-                await new Promise(r => setTimeout(r, 1200));
-                clearInterval(timer);
-                setRolling(false);
-                onPlay(Number(seed || Date.now()), Number(chosen));
-              }}
-              disabled={loading || !entropyReady}
-              className={`btn ${loading ? 'btn-loading' : 'btn-primary'}`}
-              style={{ width: '100%' }}
-            >
-              {loading ? 'Encrypting & Playing...' : (entropyReady ? (userPicked ? '⚡ Roll Your Pick' : '⚡ Roll Dice (Random)') : `Move mouse to unlock (${captureProgress}%)`)}
-            </button>
-          </div>
+        <div style={{ 
+          width: '100%', 
+          maxWidth: '520px'
+        }}>
+          {!entropyReady && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '12px 16px',
+              background: 'var(--bg-tertiary)',
+              border: '1px solid var(--border-light)',
+              borderRadius: '8px',
+              fontSize: '14px',
+              color: 'var(--text-secondary)',
+              marginBottom: '12px'
+            }}>
+              <div style={{
+                width: '12px',
+                height: '12px',
+                border: '2px solid var(--primary-blue)',
+                borderTop: '2px solid transparent',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}></div>
+              <span>Move your mouse to generate entropy ({captureProgress}%)</span>
+            </div>
+          )}
+          <button
+            onClick={async () => {
+              // If user didn't pick, choose random face now
+              const chosen = userPicked ? guess : (Math.floor(Math.random() * 6) + 1);
+              if (!userPicked) {
+                setGuess(chosen);
+                setCurrentFace(chosen);
+              }
+              // ensure some extra movement during roll
+              setRolling(true);
+              const timer = setInterval(() => setCurrentFace(prev => (prev % 6) + 1), 50);
+              await new Promise(r => setTimeout(r, 800));
+              clearInterval(timer);
+              setRolling(false);
+              // Ensure the final face is set correctly
+              setCurrentFace(chosen);
+              onPlay(Number(seed || Date.now()), Number(chosen));
+            }}
+            disabled={loading || !entropyReady}
+            className={`btn ${loading ? 'btn-loading' : 'btn-primary'}`}
+            style={{ 
+              width: '100%',
+              height: '50px',
+              fontSize: '1rem',
+              fontWeight: '600'
+            }}
+          >
+            {loading ? (
+              'Encrypting & Playing...'
+            ) : entropyReady ? (
+              userPicked ? 'Roll Your Pick' : 'Roll Dice (Random)'
+            ) : (
+              'Move mouse to unlock'
+            )}
+          </button>
         </div>
       </div>
 
@@ -733,15 +1050,15 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
     return (
       <div>
         {/* Connected Account */}
-        <div className="card">
+        <div className="card" style={{ padding: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Connected Account</div>
-              <div style={{ fontWeight: 'bold' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Connected Account</div>
+              <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>
                 {account.slice(0, 6)}...{account.slice(-4)}
               </div>
             </div>
-            <span className="badge" style={{ background: 'var(--success-color)' }}>
+            <span className="badge" style={{ background: 'var(--success-color)', fontSize: '0.7rem', padding: '2px 8px' }}>
               ✅ Connected
             </span>
           </div>
@@ -749,27 +1066,27 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
 
         {/* Past Rounds Section */}
         {pastRounds && pastRounds.length > 0 && (
-          <div className="card" style={{ marginTop: '16px' }}>
+          <div className="card" style={{ marginTop: '12px', padding: '12px' }}>
             <div
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 cursor: 'pointer',
-                padding: '12px'
+                padding: '8px'
               }}
               onClick={() => setShowPastRounds(!showPastRounds)}
             >
-              <div style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                 📜 Past Rounds ({pastRounds.length})
               </div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
                 {showPastRounds ? '▼' : '▶'}
               </span>
             </div>
 
             {showPastRounds && (
-              <div style={{ padding: '0 12px 12px 12px' }}>
+              <div style={{ padding: '0 8px 8px 8px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
                   {pastRounds.map((round) => {
                     const isWinner = round.winner.toLowerCase() === account.toLowerCase();
@@ -839,29 +1156,69 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
   }
 
   return (
-    <div className="card-priority" style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
-      <h2 style={{ fontSize: '1.25rem', marginBottom: '12px', color: 'var(--primary-color)' }}>Connect Your Wallet</h2>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '0.875rem' }}>
-        Connect your MetaMask wallet to participate in the confidential lottery
-      </p>
+    <div className="card-priority" style={{ 
+      maxWidth: '500px', 
+      margin: '0 auto', 
+      textAlign: 'center'
+    }}>
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '24px'
+      }}>
+        <h2 style={{ 
+          fontSize: '1.75rem', 
+          marginBottom: '12px', 
+          color: 'var(--text-primary)',
+          fontWeight: 700
+        }}>
+          Connect Your Wallet
+        </h2>
+        <p style={{ 
+          color: 'var(--text-secondary)', 
+          marginBottom: '0', 
+          fontSize: '1rem',
+          lineHeight: '1.6'
+        }}>
+          Connect your MetaMask wallet to experience confidential dice rolling
+        </p>
+      </div>
 
       {/* App Description */}
       <div className="card-secondary" style={{
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '20px',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '24px',
         textAlign: 'left'
       }}>
-        <h3 style={{ fontSize: '0.9rem', marginBottom: '6px', color: 'var(--text-primary)' }}>
-          🎯 What is Confidential Lottery?
+        <h3 style={{ 
+          fontSize: '1rem', 
+          marginBottom: '12px', 
+          color: 'var(--text-primary)',
+          fontWeight: 700,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          What is Confidential Dice?
         </h3>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>
-          A privacy-focused lottery built with Zama FHEVM technology where:
+        <p style={{ 
+          fontSize: '0.9rem', 
+          color: 'var(--text-secondary)', 
+          marginBottom: '12px',
+          lineHeight: '1.6'
+        }}>
+          A privacy-focused dice game built with Zama FHEVM technology where:
         </p>
-        <ul style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', paddingLeft: '16px', marginBottom: '0' }}>
-          <li>🎫 Buy tickets with encrypted numbers (0.0001 ETH)</li>
-          <li>🎲 Admin draws winner randomly on blockchain</li>
-          <li>💰 Only winner can claim the prize pool</li>
+        <ul style={{ 
+          fontSize: '0.9rem', 
+          color: 'var(--text-secondary)', 
+          paddingLeft: '20px', 
+          marginBottom: '0',
+          lineHeight: '1.6'
+        }}>
+          <li style={{ marginBottom: '6px' }}>🎲 Roll dice with encrypted results</li>
+          <li style={{ marginBottom: '6px' }}>🔒 Your moves stay completely private</li>
+   
         </ul>
       </div>
 
@@ -869,9 +1226,14 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
         onClick={onConnect}
         disabled={txStatus === 'Connecting...'}
         className={`btn ${txStatus === 'Connecting...' ? 'btn-loading' : 'btn-primary'}`}
-        style={{ minWidth: '200px' }}
+        style={{ 
+          minWidth: '200px',
+          height: '50px',
+          fontSize: '1rem',
+          fontWeight: '600'
+        }}
       >
-        {txStatus === 'Connecting...' ? '🔄 Connecting...' : '🔗 Connect MetaMask'}
+        {txStatus === 'Connecting...' ? 'Connecting...' : 'Connect MetaMask'}
       </button>
     </div>
   );
@@ -912,6 +1274,7 @@ export const useDiceGame = (account, showToast, setTxStatus, contractAddress) =>
     playerGuess: null,
     winnerStatus: null
   });
+  const [fairness, setFairness] = useState(null);
 
   const abi = [
     "function ENTRY_FEE() view returns (uint256)",
@@ -1028,6 +1391,12 @@ export const useDiceGame = (account, showToast, setTxStatus, contractAddress) =>
         return;
       }
 
+      // Compute fairness commitment: sha256(seed)
+      const buffer = new TextEncoder().encode(String(seedNumber));
+      const digest = await window.crypto.subtle.digest('SHA-256', buffer);
+      const bytes = Array.from(new Uint8Array(digest));
+      const commitment = '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+
       setTxStatus('Submitting playDice transaction...');
       const tx = await contract.playDice(
         seedHandle,
@@ -1037,6 +1406,9 @@ export const useDiceGame = (account, showToast, setTxStatus, contractAddress) =>
         { value: entryFeeWei ?? parseEther('0.0002') }
       );
       await tx.wait();
+
+      // Record fairness information
+      setFairness({ seed: seedNumber, guess: guessNumber, commitment, txHash: tx.hash });
 
       showToast('Dice played successfully! 🎲', 'success');
       await refreshEncryptedState();
@@ -1150,6 +1522,7 @@ export const useDiceGame = (account, showToast, setTxStatus, contractAddress) =>
     loading,
     encryptedState,
     decryptedState,
+    fairness,
     playDice,
     refreshEncryptedState,
     decryptLastDiceRoll,
@@ -1176,6 +1549,7 @@ export const useToast = () => {
 
   return { messages, showToast };
 };
+
 ```
 
 useWallet.js
@@ -1187,19 +1561,17 @@ export const useWallet = (showToast, contractAddress) => {
   const [account, setAccount] = useState('');
   const [isConnected, setIsConnected] = useState(false);
 
-  // Contract ABI
+  // Contract ABI for Dice Game
   const contractABI = [
-    "function buyTicket(uint8) payable",
-    "function drawWinner()",
-    "function claimPrize()",
-    "function resetLottery()",
-    "function getMyTicket() view returns (uint8)",
-    "function getBalance() view returns (uint256)",
-    "function getParticipantCount() view returns (uint256)",
-    "function ticketPrice() view returns (uint256)",
-    "function isDrawn() view returns (bool)",
-    "function winner() view returns (address)",
-    "function admin() view returns (address)"
+    "function playDice(uint256 seed, uint8 guess) payable",
+    "function getLastDiceRoll() view returns (bytes)",
+    "function getPlayerGuess() view returns (bytes)", 
+    "function getWinnerStatus() view returns (bytes)",
+    "function decryptLastDiceRoll() view returns (uint8)",
+    "function decryptPlayerGuess() view returns (uint8)",
+    "function decryptWinnerStatus() view returns (bool)",
+    "function getGameFee() view returns (uint256)",
+    "function getContractBalance() view returns (uint256)"
   ];
 
   // Switch to Sepolia network
@@ -1257,12 +1629,607 @@ export const useWallet = (showToast, contractAddress) => {
 
   return { account, isConnected, connectWallet };
 };
+
 ```
 ## FOR CSS USE THIS
 under src/app.css
-https://limewire.com/d/2bQOQ#SYb3013QX4
+
+``` css
+/* Clean Modern Design System */
+:root {
+  /* Clean Color Palette */
+  --primary-blue: #3b82f6;
+  --primary-blue-hover: #2563eb;
+  --secondary-gray: #6b7280;
+  --success-green: #10b981;
+  --warning-orange: #f59e0b;
+  --error-red: #ef4444;
+  
+  /* Neutral Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  
+  /* Text Colors */
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-white: #ffffff;
+  
+  /* Border Colors */
+  --border-light: #e5e7eb;
+  --border-medium: #d1d5db;
+  --border-dark: #9ca3af;
+  
+  /* Spacing Scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Typography */
+  --font-xs: 0.75rem;
+  --font-sm: 0.875rem;
+  --font-base: 1rem;
+  --font-lg: 1.125rem;
+  --font-xl: 1.25rem;
+  --font-2xl: 1.5rem;
+  --font-3xl: 1.875rem;
+  --font-4xl: 2.25rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  
+  /* Animation Durations */
+  --duration-fast: 0.15s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.5s;
+}
+
+/* Global Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Main App Container */
+.app {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+  position: relative;
+  z-index: 1;
+}
+
+.app-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+  min-height: 100vh;
+}
+
+/* Section Styling */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.wallet-section {
+  margin-bottom: var(--space-xs);
+}
+
+.actions-section {
+  margin: var(--space-md) 0;
+  gap: var(--space-xl);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+}
+
+.contract-section {
+  margin-top: var(--space-sm);
+}
+
+/* Header Styles */
+.header {
+  text-align: center;
+  padding: var(--space-md) 0 var(--space-xs);
+  position: relative;
+}
+
+.header-content {
+  position: relative;
+  z-index: 2;
+}
+
+.title {
+  font-size: var(--font-3xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  font-size: var(--font-base);
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto var(--space-sm);
+  line-height: 1.5;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-2xl);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-light);
+}
+
+/* Card Components */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  transition: all var(--duration-normal) ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-medium);
+}
+
+
+.card-secondary {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  opacity: 0.95;
+}
+
+/* 3D Dice */
+.dice-stage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1000px;
+  height: 180px;
+  margin: var(--space-xl) 0;
+  position: relative;
+}
+
+.dice-cube {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+}
+
+.dice-cube:hover {
+  transform: scale(1.05);
+}
+
+.dice-face {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 2px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: var(--text-primary);
+  box-shadow: 
+    inset 0 0 10px rgba(0, 0, 0, 0.05),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all var(--duration-normal) ease;
+}
+
+.dice-face:hover {
+  box-shadow: 
+    inset 0 0 15px rgba(0, 0, 0, 0.1),
+    0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Face positions */
+.face-1 { transform: rotateY(0deg) translateZ(50px); }
+.face-2 { transform: rotateY(90deg) translateZ(50px); }
+.face-3 { transform: rotateY(180deg) translateZ(50px); }
+.face-4 { transform: rotateY(-90deg) translateZ(50px); }
+.face-5 { transform: rotateX(90deg) translateZ(50px); }
+.face-6 { transform: rotateX(-90deg) translateZ(50px); }
+
+.dice-rolling {
+  animation: diceRoll 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+@keyframes diceRoll {
+  0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+  25% { transform: rotateX(90deg) rotateY(90deg) rotateZ(45deg); }
+  50% { transform: rotateX(180deg) rotateY(180deg) rotateZ(90deg); }
+  75% { transform: rotateX(270deg) rotateY(270deg) rotateZ(135deg); }
+  100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(180deg); }
+}
+
+/* Buttons */
+.btn {
+  position: relative;
+  background: var(--primary-blue);
+  color: var(--text-white);
+  border: none;
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-base);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  transition: all var(--duration-normal) ease;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--primary-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: var(--primary-blue);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-blue-hover);
+}
+
+.btn-secondary {
+  background: var(--secondary-gray);
+  color: var(--text-white);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #4b5563;
+}
+
+.btn-success {
+  background: var(--success-green);
+  color: var(--text-white);
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: var(--space-xl);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--space-sm);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: var(--font-sm);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: var(--font-base);
+  transition: all var(--duration-normal) ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Status Messages */
+.status-message {
+  padding: var(--space-lg) var(--space-xl);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-weight: 600;
+  font-size: var(--font-base);
+  border: 1px solid;
+}
+
+.status-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-green);
+  border-color: var(--success-green);
+}
+
+.status-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-red);
+  border-color: var(--error-red);
+}
+
+.status-info {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: var(--space-xl);
+  right: var(--space-xl);
+  z-index: 1000;
+  max-width: 400px;
+}
+
+.toast {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: var(--space-lg) var(--space-xl);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-md);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.toast-success {
+  border-color: var(--success-green);
+}
+
+.toast-error {
+  border-color: var(--error-red);
+}
+
+.toast-info {
+  border-color: var(--primary-blue);
+}
+
+/* Animations */
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Footer */
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-lg) 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-light);
+  z-index: 10;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.footer-text p {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.footer-links {
+  display: flex;
+  gap: var(--space-lg);
+  align-items: center;
+}
+
+.footer-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-normal) ease;
+  border: 1px solid transparent;
+}
+
+.footer-link:hover {
+  color: var(--primary-blue);
+  border-color: var(--border-light);
+  background: var(--bg-tertiary);
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .actions-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--space-md);
+  }
+  
+  .app-content {
+    gap: var(--space-lg);
+    padding: var(--space-lg) 0;
+  }
+  
+  .title {
+    font-size: var(--font-3xl);
+  }
+  
+  .card {
+    padding: var(--space-lg);
+  }
+  
+  .dice-cube {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .dice-face {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+  
+  .face-1, .face-2, .face-3, .face-4, .face-5, .face-6 {
+    transform: rotateY(0deg) translateZ(40px);
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: var(--font-2xl);
+  }
+  
+  .subtitle {
+    font-size: var(--font-base);
+  }
+  
+  .card {
+    padding: var(--space-md);
+  }
+  
+  .btn {
+    padding: var(--space-sm) var(--space-lg);
+    font-size: var(--font-sm);
+  }
+}
+```
 
 
 
-### If you have follow along all way to this, You have successfully completed the journey of Deploying a 
+### If you have follow along all way to this,
+ You have successfully completed the journey of Deploying a 
 Dapps using FHEVM powered by Zama

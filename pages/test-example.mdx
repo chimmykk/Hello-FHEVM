@@ -231,7 +231,7 @@ setFairness({
 });
 ```
 
-## 🚀 Technical Implementation
+## Technical Implementation
 
 ### **Frontend Architecture**
 
@@ -284,7 +284,7 @@ ebool private _isWinner;          // Encrypted win status
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/chimmykk/fhevm-dice-dapp
 cd fhevm-dice-dapp
 
 # Install dependencies
@@ -292,7 +292,8 @@ npm install
 
 # Setup environment variables
 cp .env.example .env
-# Add your MNEMONIC and INFURA_API_KEY
+# Add your MNEMONIC and INFURA_API_KEY OR
+# Update the hardhat.config.ts
 
 # Compile contracts
 npx hardhat compile
@@ -302,14 +303,21 @@ npx hardhat test
 
 # Deploy to Sepolia
 npx hardhat deploy --network sepolia
+
 ```
+
+
 
 ### **Frontend Setup:**
 ```bash
+On the same project folder navigate for frontend folder /
 cd frontend
 npm install
 npm start
+
 ```
+
+
 
 ## 🎮 How to Play
 
@@ -321,7 +329,7 @@ npm start
 6. **Decrypt**: Click "Decrypt All" to reveal results
 7. **Verify**: Check if your guess matched the encrypted dice roll!
 
-## 🔍 Testing & Verification
+##  Testing & Verification
 
 ### **Unit Tests:**
 ```bash
@@ -334,7 +342,7 @@ npx hardhat test
 npx hardhat --network sepolia task:play-dice --guess 4 --seed 12345
 
 # Check results
-npx hardhat --network sepolia task:dice-result
+Use Frontend FHevm.js to decrypt the result.
 ```
 
 ### **Frontend Testing:**
