@@ -6,140 +6,104 @@
 Create/replace `contracts/FHEDiceGame.sol`:
 
 ```solidity
-import { task } from "hardhat/config";
-import { FhevmType } from "@fhevm/hardhat-plugin";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 
-/**
- * Example:
- *   - npx hardhat --network localhost task:dice-address
- *   - npx hardhat --network sepolia task:dice-address
- */
-task("task:dice-address", "Prints the FHEDiceGame address").setAction(async function (_taskArguments, hre) {
-  const { deployments } = hre;
-  const fheDice = await deployments.get("FHEDiceGame");
-  console.log("FHEDiceGame address is " + fheDice.address);
-});
+import {FHE, euint32, externalEuint32, ebool} from "@fhevm/solidity/lib/FHE.sol";
+import {SepoliaConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 
+/// @title A privacy-preserving FHE dice game contract
+/// @author fhevm-hardhat-template
+contract FHEDiceGame is SepoliaConfig {
+    euint32 private _lastDiceRoll;
+    euint32 private _playerGuess;
+    ebool private _isWinner; // Encrypted winner status
+    address public owner;
 
-/**
- * Example:
- *   - npx hardhat --network localhost task:play-dice --guess 4 --seed 12345
- *   - npx hardhat --network sepolia task:play-dice --guess 2 --seed 54321
- */
-task("task:play-dice", "Play FHEDiceGame by providing guess and seed")
-  .addParam("guess", "The dice guess between 1 and 6")
-  .addParam("seed", "Random seed for dice roll")
-  .addOptionalParam("address", "Optionally specify the FHEDiceGame contract address")
-  .setAction(async function (taskArguments, hre) {
-    const { ethers, deployments, fhevm } = hre;
+    uint256 public constant ENTRY_FEE = 0.0002 ether;
 
-    const guess = parseInt(taskArguments.guess);
-    const seed = parseInt(taskArguments.seed);
+    // Custom errors for gas optimization
+    error IncorrectEntryFee();
+    error OnlyOwnerCanWithdraw();
 
-    if (!Number.isInteger(guess) || guess < 1 || guess > 6) {
-      throw new Error(`--guess must be integer between 1 and 6`);
-    }
-    if (!Number.isInteger(seed)) {
-      throw new Error(`--seed must be an integer`);
+    constructor() {
+        owner = msg.sender;
     }
 
-    await fhevm.initializeCLIApi();
-
-    const FHEDiceDeployment = taskArguments.address
-      ? { address: taskArguments.address }
-      : await deployments.get("FHEDiceGame");
-
-    console.log(`FHEDiceGame: ${FHEDiceDeployment.address}`);
-
-    const [signer] = await ethers.getSigners();
-    const fheDiceContract = await ethers.getContractAt("FHEDiceGame", FHEDiceDeployment.address);
-
-    // Encrypt seed and guess
-    const encryptedSeed = await fhevm
-      .createEncryptedInput(FHEDiceDeployment.address, signer.address)
-      .add32(seed)
-      .encrypt();
-
-    const encryptedGuess = await fhevm
-      .createEncryptedInput(FHEDiceDeployment.address, signer.address)
-      .add32(guess)
-      .encrypt();
-
-    // Get entry fee
-    const entryFee = await fheDiceContract.ENTRY_FEE();
-    console.log(`💰 Entry fee: ${ethers.formatEther(entryFee)} ETH`);
-
-    // Send tx
-    const tx = await fheDiceContract
-      .connect(signer)
-      .playDice(
-        encryptedSeed.handles[0],
-        encryptedSeed.inputProof,
-        encryptedGuess.handles[0],
-        encryptedGuess.inputProof,
-        { value: entryFee },
-      );
-
-    console.log(`Wait for tx:${tx.hash}...`);
-    const receipt = await tx.wait();
-    console.log(`tx:${tx.hash} status=${receipt?.status}`);
-
-    console.log(`FHEDiceGame playDice(guess=${guess}, seed=${seed}) succeeded!`);
-  });
-
-/**
- * Example:
- *   - npx hardhat --network localhost task:dice-result
- *   - npx hardhat --network sepolia task:dice-result
- */
-task("task:dice-result", "Fetch the last dice roll and winner status")
-  .addOptionalParam("address", "Optionally specify the FHEDiceGame contract address")
-  .setAction(async function (taskArguments, hre) {
-    const { ethers, deployments, fhevm } = hre;
-
-    await fhevm.initializeCLIApi();
-
-    const FHEDiceDeployment = taskArguments.address
-      ? { address: taskArguments.address }
-      : await deployments.get("FHEDiceGame");
-    console.log(`FHEDiceGame: ${FHEDiceDeployment.address}`);
-
-    const [signer] = await ethers.getSigners();
-    const fheDiceContract = await ethers.getContractAt("FHEDiceGame", FHEDiceDeployment.address);
-
-    const encryptedDiceRoll = await fheDiceContract.getLastDiceRoll();
-    const encryptedWinnerStatus = await fheDiceContract.getWinnerStatus();
-
-    if (encryptedDiceRoll === ethers.ZeroHash) {
-      console.log("No game played yet.");
-      return;
+    /// @notice Returns the last encrypted dice roll
+    function getLastDiceRoll() external view returns (euint32) {
+        return _lastDiceRoll;
     }
 
-    const clearDiceRoll = await fhevm.userDecryptEuint(
-      FhevmType.euint32,
-      encryptedDiceRoll,
-      FHEDiceDeployment.address,
-      signer,
-    );
+    /// @notice Returns the player's encrypted guess
+    function getPlayerGuess() external view returns (euint32) {
+        return _playerGuess;
+    }
 
-    const clearWinnerStatus = await fhevm.userDecryptEuint(
-      FhevmType.euint32,
-      encryptedWinnerStatus,
-      FHEDiceDeployment.address,
-      signer,
-    );
+    /// @notice Returns the encrypted winner status
+    function getWinnerStatus() external view returns (ebool) {
+        return _isWinner;
+    }
 
-    console.log("Encrypted Dice Roll   :", encryptedDiceRoll);
-    console.log("Clear Dice Roll       :", clearDiceRoll.toString());
-    console.log("Encrypted Winner Stat :", encryptedWinnerStatus);
-    console.log("Clear Winner Stat     :", clearWinnerStatus.toString());
-  });
+    /// @notice Play the dice game with encrypted inputs
+    /// @param inputSeed the encrypted seed
+    /// @param seedProof the seed proof
+    /// @param inputGuess the encrypted guess (1-6)
+    /// @param guessProof the guess proof
+    function playDice(
+        externalEuint32 inputSeed,
+        bytes calldata seedProof,
+        externalEuint32 inputGuess,
+        bytes calldata guessProof
+    ) external payable {
+        if (msg.value != ENTRY_FEE) revert IncorrectEntryFee();
 
+        // Convert external encrypted inputs to internal euint32
+        euint32 encryptedSeed = FHE.fromExternal(inputSeed, seedProof);
+        euint32 encryptedGuess = FHE.fromExternal(inputGuess, guessProof);
+
+        // Store encrypted values
+        _playerGuess = encryptedGuess;
+        _lastDiceRoll = _generateDiceRoll(encryptedSeed);
+
+        // Core FHE Logic: Determine if the player is a winner on-chain
+        _isWinner = FHE.eq(_lastDiceRoll, _playerGuess);
+
+        // Allow the player to access their own encrypted values for off-chain decryption
+        FHE.allowThis(_lastDiceRoll);
+        FHE.allow(_lastDiceRoll, msg.sender);
+        FHE.allowThis(_playerGuess);
+        FHE.allow(_playerGuess, msg.sender);
+        FHE.allowThis(_isWinner);
+        FHE.allow(_isWinner, msg.sender);
+    }
+
+    /// @notice Generate a dice roll from encrypted seed
+    function _generateDiceRoll(euint32 seed) internal returns (euint32) {
+        euint32 salt = FHE.asEuint32(42);
+        euint32 combined = FHE.add(seed, salt);
+        euint32 mask = FHE.asEuint32(7);
+        euint32 masked = FHE.and(combined, mask);
+        euint32 one = FHE.asEuint32(1);
+        euint32 result = FHE.add(masked, one);
+        euint32 six = FHE.asEuint32(6);
+        return FHE.min(result, six);
+    }
+
+    /// @notice Withdraw contract balance (owner only)
+    function withdraw() external {
+        if (msg.sender != owner) revert OnlyOwnerCanWithdraw();
+        payable(owner).transfer(address(this).balance);
+    }
+
+    /// @notice Fund the contract
+    receive() external payable {}
+}
 ```
 
 ## Create a test script to check for smart contract efficiency
 
-Create/replace `contracts/FHEDiceGame.ts`:
+Create/replace `contracts/test/FHEDiceGame.ts`:
 ``` ts
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { ethers, fhevm } from "hardhat";
@@ -451,6 +415,141 @@ Example output: FHEDiceGame contract deployed to: 0xA6915c97f44f1708e37dD871CCE9
 Now Copy / Keep the smart contract we will have to integrate this on the frontend
 ````
 
+
+## Create a task script to test the smart contract 
+Create/replace `contracts/task/FHEDiceGame.ts`:
+``` js 
+import { task } from "hardhat/config";
+import { FhevmType } from "@fhevm/hardhat-plugin";
+
+/**
+ * Example:
+ *   - npx hardhat --network localhost task:dice-address
+ *   - npx hardhat --network sepolia task:dice-address
+ */
+task("task:dice-address", "Prints the FHEDiceGame address").setAction(async function (_taskArguments, hre) {
+  const { deployments } = hre;
+  const fheDice = await deployments.get("FHEDiceGame");
+  console.log("FHEDiceGame address is " + fheDice.address);
+});
+
+
+/**
+ * Example:
+ *   - npx hardhat --network localhost task:play-dice --guess 4 --seed 12345
+ *   - npx hardhat --network sepolia task:play-dice --guess 2 --seed 54321
+ */
+task("task:play-dice", "Play FHEDiceGame by providing guess and seed")
+  .addParam("guess", "The dice guess between 1 and 6")
+  .addParam("seed", "Random seed for dice roll")
+  .addOptionalParam("address", "Optionally specify the FHEDiceGame contract address")
+  .setAction(async function (taskArguments, hre) {
+    const { ethers, deployments, fhevm } = hre;
+
+    const guess = parseInt(taskArguments.guess);
+    const seed = parseInt(taskArguments.seed);
+
+    if (!Number.isInteger(guess) || guess < 1 || guess > 6) {
+      throw new Error(`--guess must be integer between 1 and 6`);
+    }
+    if (!Number.isInteger(seed)) {
+      throw new Error(`--seed must be an integer`);
+    }
+
+    await fhevm.initializeCLIApi();
+
+    const FHEDiceDeployment = taskArguments.address
+      ? { address: taskArguments.address }
+      : await deployments.get("FHEDiceGame");
+
+    console.log(`FHEDiceGame: ${FHEDiceDeployment.address}`);
+
+    const [signer] = await ethers.getSigners();
+    const fheDiceContract = await ethers.getContractAt("FHEDiceGame", FHEDiceDeployment.address);
+
+    // Encrypt seed and guess
+    const encryptedSeed = await fhevm
+      .createEncryptedInput(FHEDiceDeployment.address, signer.address)
+      .add32(seed)
+      .encrypt();
+
+    const encryptedGuess = await fhevm
+      .createEncryptedInput(FHEDiceDeployment.address, signer.address)
+      .add32(guess)
+      .encrypt();
+
+    // Get entry fee
+    const entryFee = await fheDiceContract.ENTRY_FEE();
+    console.log(`💰 Entry fee: ${ethers.formatEther(entryFee)} ETH`);
+
+    // Send tx
+    const tx = await fheDiceContract
+      .connect(signer)
+      .playDice(
+        encryptedSeed.handles[0],
+        encryptedSeed.inputProof,
+        encryptedGuess.handles[0],
+        encryptedGuess.inputProof,
+        { value: entryFee },
+      );
+
+    console.log(`Wait for tx:${tx.hash}...`);
+    const receipt = await tx.wait();
+    console.log(`tx:${tx.hash} status=${receipt?.status}`);
+
+    console.log(`FHEDiceGame playDice(guess=${guess}, seed=${seed}) succeeded!`);
+  });
+
+/**
+ * Example:
+ *   - npx hardhat --network localhost task:dice-result
+ *   - npx hardhat --network sepolia task:dice-result
+ */
+task("task:dice-result", "Fetch the last dice roll and winner status")
+  .addOptionalParam("address", "Optionally specify the FHEDiceGame contract address")
+  .setAction(async function (taskArguments, hre) {
+    const { ethers, deployments, fhevm } = hre;
+
+    await fhevm.initializeCLIApi();
+
+    const FHEDiceDeployment = taskArguments.address
+      ? { address: taskArguments.address }
+      : await deployments.get("FHEDiceGame");
+    console.log(`FHEDiceGame: ${FHEDiceDeployment.address}`);
+
+    const [signer] = await ethers.getSigners();
+    const fheDiceContract = await ethers.getContractAt("FHEDiceGame", FHEDiceDeployment.address);
+
+    const encryptedDiceRoll = await fheDiceContract.getLastDiceRoll();
+    const encryptedWinnerStatus = await fheDiceContract.getWinnerStatus();
+
+    if (encryptedDiceRoll === ethers.ZeroHash) {
+      console.log("No game played yet.");
+      return;
+    }
+
+    const clearDiceRoll = await fhevm.userDecryptEuint(
+      FhevmType.euint32,
+      encryptedDiceRoll,
+      FHEDiceDeployment.address,
+      signer,
+    );
+
+    const clearWinnerStatus = await fhevm.userDecryptEuint(
+      FhevmType.euint32,
+      encryptedWinnerStatus,
+      FHEDiceDeployment.address,
+      signer,
+    );
+
+    console.log("Encrypted Dice Roll   :", encryptedDiceRoll);
+    console.log("Clear Dice Roll       :", clearDiceRoll.toString());
+    console.log("Encrypted Winner Stat :", encryptedWinnerStatus);
+    console.log("Clear Winner Stat     :", clearWinnerStatus.toString());
+  });
+
+```
+
 ## Play game / Run task test of the FHEVM contract:
 Let us now test the smart contract by guessing a number;
 Note: Here the seed provided is to randomize the computation
@@ -466,8 +565,9 @@ tx:0xd69aa9095b34e8832451c8359af64f477f5c820063f59fb21e21c9062fd89b7e status=1
 FHEDiceGame playDice(guess=6, seed=65463) succeeded!
 ```
 
-## Now the next step is to figure out the guess you made and the outcome of the computation of fhevm where
-we used seed and salt to randomize the outcome if it match, you're a winner else loser!
+## Understanding the Dice Generation Algorithm
+The `_generateDiceRoll` function (lines 73-83) performs the following encrypted operations:
+We used seed (random numbers) and salt to randomize the outcome 
 Refer: Line of Code 73-83 on FHEDiceGame.sol
         ``` solidity
          /// @notice Generate a dice roll from encrypted seed
@@ -482,8 +582,12 @@ Refer: Line of Code 73-83 on FHEDiceGame.sol
         return FHE.min(result, six);
     }
     ```
+**Algorithm breakdown:**
+- **Salt addition**: Prevents predictable patterns by adding 42 to the seed
+- **Bit masking**: `& 7` creates modulo 8 operation (0-7 range)
+- **Range adjustment**: `+ 1` shifts to 1-8, then `min(result, 6)` caps at dice range 1-6
 
 
-## Next Steps / chapter  you will figure out how to Decrypt or check for the result.
+## Next Steps is Decrypting Game Results and Determining Winners.
 
 Using FHevm.js you can decrypt the result and check if you win or lose

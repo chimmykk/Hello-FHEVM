@@ -2,6 +2,8 @@
 
 A simple Dice Game DApp powered by FHEVM smart contracts with fully homomorphic encryption.
 
+Here we will proceed with integrating the FHEVM smart contract & Fhevm.js with the React frontend.
+and determining the results of the game.
 ## Prerequisites
 
 - Basic understanding of creating and initializing React-based projects
@@ -235,11 +237,12 @@ root.render(
 );
 ```
 
-### Now create a Component on the root of the project of src, as src/components
+### Now create a Component and it's files on the root of the project of src, as src/components 
+
 ``` js
 mkdir components
-   
-# Create all these component files
+
+
 touch ContractInfo.js
 touch Header.js
 touch StatusMessage.js
@@ -249,6 +252,9 @@ touch ToastContainer.js
 touch Footer.js
 touch PlayDice.js
 touch WalletConnect.js
+
+
+mv ContractInfo.js Header.js StatusMessage.js DiceResults.js PastRounds.js ToastContainer.js Footer.js PlayDice.js WalletConnect.js components/
  ```
 
  # Replace the files with these 
@@ -1242,15 +1248,17 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
 export default WalletConnect;
 ```
 
-### Now Let's proceed with the hooks setup
+### Now Let's proceed with the hooks setup create hook folder and files
 ``` js
+
 mkdir hooks
 
-# Create all files
+
 touch useDiceGame.js
 touch useToast.js
 touch useWallet.js
 
+mv useDiceGame.js useToast.js useWallet.js hooks/
  ```
 
  Now replace the files with this snippets
@@ -2227,7 +2235,10 @@ body {
   }
 }
 ```
-
+### Run the frontend DApp:
+``` js
+npm run start
+```
 
 
 ### If you have follow along all way to this,

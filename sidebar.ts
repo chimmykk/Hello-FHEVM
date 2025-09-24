@@ -11,14 +11,6 @@ const sidebar = [
         ],
     },
     {
-        text: 'Basic',
-        items: [
-            { text: 'Counter', link: '/basic-counter-contract' },
-      
-        ],
-    },
-
- {
         text: 'How it works',
         items: [
             { text: 'Brief', link: '/test-example' },
@@ -26,6 +18,15 @@ const sidebar = [
         ],
 
     },
+    {
+        text: 'Misc',
+        items: [
+            { text: 'What can i do next?', link: '/basic-counter-contract' },
+      
+        ],
+    },
+
+
   
   
 ];
