@@ -50,7 +50,7 @@ var vocs_config_default = defineConfig({
   socials: [
     {
       icon: "github",
-      link: "https://github.com/"
+      link: "https://github.com/chimmykk/"
     },
     {
       icon: "discord",
@@ -58,7 +58,7 @@ var vocs_config_default = defineConfig({
     },
     {
       icon: "x",
-      link: "https://x.com/"
+      link: "https://x.com/rilso_y"
     }
   ],
   theme: {
@@ -88,13 +88,10 @@ var vocs_config_default = defineConfig({
           text: `Learn FHEVM`,
           link: `/introduction`
         },
-        {
-          text: "Changelog",
-          link: "https://github.com/"
-        },
+       
         {
           text: "Contributing",
-          link: "https://github.com/"
+          link: "https://github.com/chimmykk/Hello-FHEVM"
         }
       ]
     }
@@ -106,7 +103,7 @@ var vocs_config_default = defineConfig({
     }
   },
   editLink: {
-    pattern: "https://github.com/",
+    pattern: "https://github.com/chimmykk/Hello-FHEVM",
     text: "Suggest changes to this page"
   }
 });

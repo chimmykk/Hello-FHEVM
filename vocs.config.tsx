@@ -23,15 +23,15 @@ export default defineConfig({
   socials: [
     {
       icon: "github",
-      link: "https://github.com/",
+      link: "https://github.com/chimmykk",
     },
     {
       icon: "discord",
-      link: "https://discord.gg/",
+      link: "https://discord.gg/8fPYHXdX",
     },
     {
       icon: "x",
-      link: "https://x.com/",
+      link: "https://x.com/rilso_y",
     },
   ],
   theme: {
