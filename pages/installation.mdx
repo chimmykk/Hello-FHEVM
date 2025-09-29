@@ -38,3 +38,66 @@ npm -v
 <Callout type="info">
   Content  Refer to [Zama Docs](https://www.zama.ai/developer-hub) for more details.
 </Callout>
+
+---
+
+import { TutorialQuiz } from "../components";
+
+<TutorialQuiz 
+  title="Installation Knowledge Check"
+  description="Test your understanding of the FHEVM development setup!"
+  questions={[
+    {
+      id: "node-version",
+      question: "Which Node.js versions are recommended for Hardhat development?",
+      options: [
+        "Any version above v16",
+        "Only odd-numbered versions (v17, v19, v21)",
+        "Even-numbered LTS versions (v18, v20)",
+        "Only the latest version"
+      ],
+      correctAnswer: 2,
+      explanation: "Hardhat requires even-numbered LTS versions like v18.x or v20.x. Odd-numbered versions (v17, v19, v21) are not supported and will cause warnings or unexpected behavior.",
+      topic: "Node.js Setup"
+    },
+    {
+      id: "fhevm-requirements",
+      question: "What is required to develop FHEVM smart contracts?",
+      options: [
+        "Just Solidity knowledge",
+        "Solidity + FHEVM SDK + Hardhat Plugin",
+        "Only the FHEVM SDK",
+        "Just Hardhat framework"
+      ],
+      correctAnswer: 1,
+      explanation: "FHEVM development requires Solidity knowledge, the FHEVM SDK for encryption/decryption, and the Hardhat plugin for development environment. All three components work together to enable confidential smart contract development.",
+      topic: "Development Stack"
+    },
+    {
+      id: "infura-purpose",
+      question: "Why do you need an Infura API key for FHEVM development?",
+      options: [
+        "To deploy contracts faster",
+        "To reduce gas fees",
+        "For Sepolia testnet RPC access",
+        "To encrypt data locally"
+      ],
+      correctAnswer: 2,
+      explanation: "Infura API key provides RPC access to Sepolia testnet, which is essential for deploying and testing FHEVM contracts. It acts as a gateway to the Ethereum network.",
+      topic: "Network Access"
+    },
+    {
+      id: "verification-commands",
+      question: "Which commands verify your Node.js and npm installation?",
+      options: [
+        "node --version && npm --version",
+        "node -v && npm -v",
+        "check node && check npm",
+        "verify node && verify npm"
+      ],
+      correctAnswer: 1,
+      explanation: "The commands 'node -v' and 'npm -v' (or 'node --version' and 'npm --version') are used to verify that Node.js and npm are properly installed and show their version numbers.",
+      topic: "Installation Verification"
+    }
+  ]}
+/>

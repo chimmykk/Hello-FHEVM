@@ -591,3 +591,92 @@ Refer: Line of Code 73-83 on FHEDiceGame.sol
 ## Next Steps is Decrypting Game Results and Determining Winners.
 
 Using FHevm.js you can decrypt the result and check if you win or lose
+
+---
+
+import { TutorialQuiz } from "../components";
+
+<TutorialQuiz 
+  title=" Smart Contract Implementation Quiz"
+  description="Test your understanding of FHEVM smart contract development and testing!"
+  questions={[
+    {
+      id: "contract-structure",
+      question: "What are the main encrypted state variables in the FHEDiceGame contract?",
+      options: [
+        "Only _lastDiceRoll",
+        "_lastDiceRoll, _playerGuess, and _isWinner",
+        "Only _playerGuess",
+        "Only _isWinner"
+      ],
+      correctAnswer: 1,
+      explanation: "The contract stores three encrypted state variables: _lastDiceRoll (encrypted dice result), _playerGuess (encrypted player guess), and _isWinner (encrypted winner status). All are encrypted to maintain privacy.",
+      topic: "Contract Structure"
+    },
+    {
+      id: "fhe-allow-function",
+      question: "What does the FHE.allow() function do in the smart contract?",
+      options: [
+        "Encrypts values before storage",
+        "Grants decryption permissions to specific users",
+        "Validates encrypted inputs",
+        "Generates random numbers"
+      ],
+      correctAnswer: 1,
+      explanation: "FHE.allow() grants decryption permissions to specific users. This ensures only authorized users (like the player who submitted the guess) can decrypt their own encrypted values off-chain.",
+      topic: "Access Control"
+    },
+    {
+      id: "dice-algorithm",
+      question: "How does the _generateDiceRoll function ensure fair randomness?",
+      options: [
+        "Uses blockchain block hashes",
+        "Combines encrypted seed with salt and applies bit masking",
+        "Uses external random number generators",
+        "Relies on transaction timestamps"
+      ],
+      correctAnswer: 1,
+      explanation: "The algorithm combines the encrypted seed with a salt (42), applies bit masking (& 7), and adjusts the range to 1-6. This creates deterministic but unpredictable results while keeping everything encrypted.",
+      topic: "Randomness Algorithm"
+    },
+    {
+      id: "testing-approach",
+      question: "Why do FHEVM tests check for fhevm.isMock?",
+      options: [
+        "To ensure faster test execution",
+        "To skip tests that can't run on Sepolia testnet",
+        "To reduce gas costs",
+        "To enable parallel testing"
+      ],
+      correctAnswer: 1,
+      explanation: "FHEVM tests check fhevm.isMock because some test operations (like userDecryptEuint) can only run in the mock environment, not on real networks like Sepolia testnet.",
+      topic: "Testing Strategy"
+    },
+    {
+      id: "encryption-flow",
+      question: "What is the correct flow for playing the dice game?",
+      options: [
+        "Encrypt inputs → Submit to contract → Decrypt results",
+        "Submit plaintext → Contract encrypts → Return encrypted",
+        "Decrypt inputs → Process → Encrypt outputs",
+        "Use pre-encrypted values → Process → Return as-is"
+      ],
+      correctAnswer: 0,
+      explanation: "The correct flow is: 1) Encrypt inputs client-side, 2) Submit encrypted values to contract, 3) Contract processes encrypted data, 4) User decrypts results off-chain. This maintains privacy throughout the entire process.",
+      topic: "Encryption Flow"
+    },
+    {
+      id: "task-scripts",
+      question: "What is the purpose of Hardhat task scripts in FHEVM development?",
+      options: [
+        "To compile contracts faster",
+        "To test contract functionality via CLI",
+        "To reduce deployment costs",
+        "To generate documentation"
+      ],
+      correctAnswer: 1,
+      explanation: "Task scripts allow developers to test FHEVM contract functionality via CLI commands. They handle encryption, contract interaction, and decryption, making it easy to test the complete flow without a frontend.",
+      topic: "Development Tools"
+    }
+  ]}
+/>

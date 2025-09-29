@@ -1,8 +1,69 @@
-import { Playground } from "../components";
+import { Playground, TutorialQuiz } from "../components";
 
 # Integers [ Integers]
 
 ``` solidity
 // [!include ~/snippets/hello-world.sol]
 ```
+
+---
+
+<TutorialQuiz 
+  title="🔢 Encrypted Integers Quiz"
+  description="Test your understanding of encrypted integer operations in FHEVM!"
+  questions={[
+    {
+      id: "euint32-basics",
+      question: "What is euint32 in FHEVM?",
+      options: [
+        "A 32-bit encrypted unsigned integer",
+        "A 32-bit regular unsigned integer",
+        "A 32-bit signed encrypted integer",
+        "A special type for Ethereum addresses"
+      ],
+      correctAnswer: 0,
+      explanation: "euint32 is a 32-bit encrypted unsigned integer in FHEVM. It's the encrypted version of Solidity's uint32, allowing computations on encrypted data without revealing the actual values.",
+      topic: "Encrypted Types"
+    },
+    {
+      id: "fhe-operations",
+      question: "What operations can you perform on euint32 values?",
+      options: [
+        "Only basic arithmetic (add, subtract)",
+        "Only comparison operations",
+        "Arithmetic, comparison, and logical operations",
+        "Only storage operations"
+      ],
+      correctAnswer: 2,
+      explanation: "FHEVM supports a wide range of operations on encrypted integers including arithmetic (add, subtract, multiply), comparison (eq, lt, gt), and logical operations, all while keeping the data encrypted.",
+      topic: "FHE Operations"
+    },
+    {
+      id: "privacy-guarantee",
+      question: "What happens to the actual values during FHE operations?",
+      options: [
+        "They are temporarily decrypted for computation",
+        "They remain encrypted throughout the entire computation",
+        "They are partially revealed during operations",
+        "They are stored in plaintext on the blockchain"
+      ],
+      correctAnswer: 1,
+      explanation: "The key feature of FHE is that values remain encrypted throughout the entire computation process. The blockchain never sees the actual values, ensuring complete privacy.",
+      topic: "Privacy & Security"
+    },
+    {
+      id: "decryption-process",
+      question: "Who can decrypt euint32 values?",
+      options: [
+        "Anyone can decrypt any euint32 value",
+        "Only the contract owner can decrypt",
+        "Only the user who created the encrypted value",
+        "Only miners can decrypt"
+      ],
+      correctAnswer: 2,
+      explanation: "Only the user who created the encrypted value (or someone they authorize) can decrypt it. This is controlled by the FHE.allow() function in the smart contract, ensuring data privacy.",
+      topic: "Access Control"
+    }
+  ]}
+/>
 

@@ -299,3 +299,92 @@ After completing these setup steps, you can now:
 - Deploy and test on the Sepolia Testnet
 
 Make sure to set up your environment variables (like `PRIVATE_KEY` `MNEMONIC`) in a `.env` file before deploying.
+
+---
+
+import { TutorialQuiz } from "../components";
+
+<TutorialQuiz 
+  title=" Getting Started with FHEVM"
+  description="Test your understanding of the FHEVM project structure and development workflow!"
+  questions={[
+    {
+      id: "project-structure",
+      question: "What is the purpose of the 'contracts/' directory in an FHEVM project?",
+      options: [
+        "To store compiled contract artifacts",
+        "To store Solidity smart contracts source code",
+        "To store deployment scripts",
+        "To store test files"
+      ],
+      correctAnswer: 1,
+      explanation: "The 'contracts/' directory contains the Solidity smart contracts source code. This is where you write your FHEVM contracts with encrypted types like euint32 and ebool.",
+      topic: "Project Structure"
+    },
+    {
+      id: "fhevm-types",
+      question: "What are euint32 and ebool in FHEVM?",
+      options: [
+        "Regular Solidity types with extra features",
+        "Encrypted versions of uint32 and bool",
+        "Special types for Ethereum addresses",
+        "Types for gas optimization"
+      ],
+      correctAnswer: 1,
+      explanation: "euint32 and ebool are encrypted versions of Solidity's uint32 and bool types. The 'e' prefix indicates they are encrypted, allowing computations on private data without revealing the actual values.",
+      topic: "FHEVM Types"
+    },
+    {
+      id: "view-functions",
+      question: "What do view functions return in FHEVM contracts?",
+      options: [
+        "Decrypted values that anyone can read",
+        "Encrypted values that require off-chain decryption",
+        "Plain text values for public access",
+        "Compressed data for efficiency"
+      ],
+      correctAnswer: 1,
+      explanation: "View functions in FHEVM return encrypted values (opaque data) that require off-chain decryption using the FHEVM SDK. This ensures privacy while allowing authorized users to decrypt their own data.",
+      topic: "View Functions"
+    },
+    {
+      id: "homomorphic-operations",
+      question: "What makes FHE operations special in smart contracts?",
+      options: [
+        "They are faster than regular operations",
+        "They work on encrypted data without decryption",
+        "They use less gas than regular operations",
+        "They are easier to implement"
+      ],
+      correctAnswer: 1,
+      explanation: "FHE (Fully Homomorphic Encryption) operations can perform computations on encrypted data without ever decrypting the values. This enables private smart contracts where data remains confidential throughout the entire computation process.",
+      topic: "FHE Operations"
+    },
+    {
+      id: "network-configuration",
+      question: "Why is Sepolia testnet commonly used for FHEVM development?",
+      options: [
+        "It has the lowest gas fees",
+        "It supports FHEVM operations and is a public testnet",
+        "It's the fastest network",
+        "It doesn't require any configuration"
+      ],
+      correctAnswer: 1,
+      explanation: "Sepolia testnet supports FHEVM operations and is a public testnet, making it ideal for development and testing. It allows developers to test FHEVM contracts without using mainnet resources.",
+      topic: "Network Configuration"
+    },
+    {
+      id: "environment-setup",
+      question: "What environment variables are typically needed for FHEVM development?",
+      options: [
+        "Only PRIVATE_KEY",
+        "MNEMONIC and INFURA_API_KEY",
+        "Only INFURA_API_KEY",
+        "No environment variables needed"
+      ],
+      correctAnswer: 1,
+      explanation: "FHEVM development typically requires MNEMONIC (for account management) and INFURA_API_KEY (for RPC access to networks like Sepolia). These enable deployment and interaction with FHEVM contracts.",
+      topic: "Environment Setup"
+    }
+  ]}
+/>

@@ -370,15 +370,94 @@ Use Frontend FHevm.js to decrypt the result.
 4. Add tests
 5. Submit a pull request
 
-##  License
+---
 
-MIT License - see LICENSE file for details.
+import { TutorialQuiz } from "../components";
 
-##  Acknowledgments
-
-- **Zama Team**: For the incredible FHEVM technology
-- **Ethereum Foundation**: For the underlying blockchain infrastructure
-- **Open Source Community**: For the tools and libraries used
+<TutorialQuiz 
+  title="🎲 FHEVM Dice Game Mastery"
+  description="Test your understanding of the complete FHEVM dice game implementation!"
+  questions={[
+    {
+      id: "entropy-generation",
+      question: "How is randomness generated in the FHEVM dice game?",
+      options: [
+        "Using blockchain block hashes",
+        "Through mouse movement entropy collection",
+        "Using a centralized random number generator",
+        "Through smart contract internal randomness"
+      ],
+      correctAnswer: 1,
+      explanation: "The game uses mouse movement entropy collection over 2 seconds to generate unpredictable seeds. This ensures true randomness while maintaining privacy through client-side generation.",
+      topic: "Randomness & Entropy"
+    },
+    {
+      id: "encryption-flow",
+      question: "When does encryption happen in the dice game?",
+      options: [
+        "After the dice roll on the blockchain",
+        "Before submitting to the smart contract",
+        "During the dice roll computation",
+        "Only when displaying results"
+      ],
+      correctAnswer: 1,
+      explanation: "Encryption happens client-side before submitting to the smart contract. Both the seed and guess are encrypted using the FHEVM SDK before being sent to the blockchain, ensuring privacy from the start.",
+      topic: "Encryption Process"
+    },
+    {
+      id: "fhe-computation",
+      question: "What happens during the on-chain FHE computation?",
+      options: [
+        "Values are decrypted for computation",
+        "All operations happen on encrypted data",
+        "Only the dice roll is encrypted",
+        "Only the guess is encrypted"
+      ],
+      correctAnswer: 1,
+      explanation: "All operations in the smart contract happen on encrypted data using FHE operations. The dice roll generation, comparison, and winner determination all occur without ever decrypting the values.",
+      topic: "FHE Computation"
+    },
+    {
+      id: "access-control",
+      question: "Who can decrypt the game results?",
+      options: [
+        "Anyone can decrypt any result",
+        "Only the contract owner",
+        "Only the player who submitted the guess",
+        "Only the miner who processed the transaction"
+      ],
+      correctAnswer: 2,
+      explanation: "Only the player who submitted the guess can decrypt their own results. This is enforced by the FHE.allow() function in the smart contract, which grants decryption permissions only to the specific player.",
+      topic: "Privacy & Access Control"
+    },
+    {
+      id: "fairness-verification",
+      question: "How can players verify the game is fair?",
+      options: [
+        "By trusting the smart contract code",
+        "Through cryptographic proofs and transparent algorithms",
+        "By asking other players",
+        "Through centralized verification"
+      ],
+      correctAnswer: 1,
+      explanation: "Fairness is ensured through cryptographic proofs, transparent algorithms, and the deterministic nature of the dice generation. Players can verify the algorithm is fair and the same seed always produces the same result.",
+      topic: "Game Fairness"
+    },
+    {
+      id: "architecture-components",
+      question: "What are the main components of the FHEVM dice game architecture?",
+      options: [
+        "Just the smart contract",
+        "Smart contract + frontend + FHEVM SDK",
+        "Only frontend and smart contract",
+        "Just the FHEVM SDK"
+      ],
+      correctAnswer: 1,
+      explanation: "The complete architecture includes the smart contract (for FHE computation), the React frontend (for user interaction and encryption), and the FHEVM SDK (for encryption/decryption operations). All three work together to create the privacy-preserving game.",
+      topic: "System Architecture"
+    }
+  ]}
+/>
 
 ---
 

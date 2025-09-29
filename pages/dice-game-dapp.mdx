@@ -2244,3 +2244,79 @@ npm run start
 ### If you have follow along all way to this,
  You have successfully completed the journey of Deploying a 
 Dapps using FHEVM powered by Zama
+
+---
+
+import { TutorialQuiz } from "../components";
+
+<TutorialQuiz 
+  title="DApp Development Mastery"
+  description="Test your understanding of building FHEVM-powered DApps!"
+  questions={[
+    {
+      id: "frontend-structure",
+      question: "What are the key components in a FHEVM DApp frontend?",
+      options: [
+        "Just React components",
+        "Components + Hooks + FHEVM SDK integration",
+        "Only smart contract interaction",
+        "Just wallet connection"
+      ],
+      correctAnswer: 1,
+      explanation: "A complete FHEVM DApp frontend requires React components for UI, custom hooks for state management, and FHEVM SDK integration for encryption/decryption operations. All components work together to create the full user experience.",
+      topic: "Frontend Architecture"
+    },
+    {
+      id: "wallet-integration",
+      question: "Why is wallet integration important in FHEVM DApps?",
+      options: [
+        "To store encrypted data",
+        "For user authentication and transaction signing",
+        "To encrypt data locally",
+        "To connect to the blockchain"
+      ],
+      correctAnswer: 1,
+      explanation: "Wallet integration is crucial for user authentication and transaction signing. It enables users to connect their accounts, sign transactions, and interact with the FHEVM smart contracts securely.",
+      topic: "Wallet Integration"
+    },
+    {
+      id: "fhevm-sdk-usage",
+      question: "What does the FHEVM SDK handle in the DApp?",
+      options: [
+        "Only smart contract deployment",
+        "Encryption, decryption, and blockchain interaction",
+        "Only UI rendering",
+        "Only wallet connection"
+      ],
+      correctAnswer: 1,
+      explanation: "The FHEVM SDK handles encryption of user inputs, decryption of results, and provides the interface for interacting with FHEVM smart contracts. It's the bridge between the frontend and the encrypted blockchain operations.",
+      topic: "FHEVM SDK"
+    },
+    {
+      id: "state-management",
+      question: "How should encrypted state be managed in a FHEVM DApp?",
+      options: [
+        "Store encrypted values in plaintext",
+        "Keep encrypted and decrypted states separate",
+        "Only store decrypted values",
+        "Use external databases"
+      ],
+      correctAnswer: 1,
+      explanation: "Encrypted and decrypted states should be managed separately. Encrypted values come from the blockchain, while decrypted values are only available to authorized users through the FHEVM SDK decryption process.",
+      topic: "State Management"
+    },
+    {
+      id: "user-experience",
+      question: "What makes the user experience unique in FHEVM DApps?",
+      options: [
+        "Faster loading times",
+        "Privacy-preserving interactions with encrypted data",
+        "Lower gas fees",
+        "Better UI design"
+      ],
+      correctAnswer: 1,
+      explanation: "FHEVM DApps provide privacy-preserving interactions where users can interact with encrypted data without revealing their inputs or outputs to anyone else, including the blockchain itself. This creates a unique trustless privacy experience.",
+      topic: "User Experience"
+    }
+  ]}
+/>

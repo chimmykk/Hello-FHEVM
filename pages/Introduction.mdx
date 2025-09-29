@@ -19,3 +19,66 @@ Visit the Zama Documentation to understand the basics and advanced concepts of t
 Explore the different projects and use cases built on Zama, including confidential auction house  and tokenized assets.
 
 - [Ecosystem Docs](https://www.zama.ai/ecosystem)
+
+---
+
+import { TutorialQuiz } from "../components";
+
+<TutorialQuiz 
+  title="🧠 Test Your FHEVM Knowledge"
+  description="Let's see how well you understand the basics of FHEVM!"
+  questions={[
+    {
+      id: "fhevm-definition",
+      question: "What does FHEVM stand for?",
+      options: [
+        "Fully Homomorphic Encryption Virtual Machine",
+        "Fully Homomorphic Ethereum Virtual Machine", 
+        "Fully Homomorphic Encryption Value Machine",
+        "Fully Homomorphic Ethereum Value Machine"
+      ],
+      correctAnswer: 0,
+      explanation: "FHEVM stands for Fully Homomorphic Encryption Virtual Machine. It enables confidential smart contracts on EVM-compatible blockchains by keeping data encrypted during computation.",
+      topic: "FHEVM Basics"
+    },
+    {
+      id: "transparency-vs-privacy",
+      question: "What is the main advantage of FHEVM over traditional blockchains?",
+      options: [
+        "Faster transaction processing",
+        "Lower gas fees",
+        "Privacy during computation while maintaining transparency",
+        "Better scalability"
+      ],
+      correctAnswer: 2,
+      explanation: "FHEVM's main advantage is enabling privacy during computation while maintaining the transparency and trust benefits of blockchain technology. This is crucial for applications like voting, identity, and financial data.",
+      topic: "Privacy & Transparency"
+    },
+    {
+      id: "encrypted-types",
+      question: "What does the 'e' prefix in euint32 and ebool represent?",
+      options: [
+        "Enhanced versions of regular types",
+        "Encrypted versions of regular Solidity types",
+        "Ethereum-specific types",
+        "Extended functionality types"
+      ],
+      correctAnswer: 1,
+      explanation: "The 'e' prefix marks encrypted versions of existing Solidity types. For example, euint32 is an encrypted version of uint32, and ebool is an encrypted version of bool. This makes FHEVM familiar to Solidity developers.",
+      topic: "Encrypted Types"
+    },
+    {
+      id: "zama-company",
+      question: "Who built FHEVM?",
+      options: [
+        "Ethereum Foundation",
+        "Zama",
+        "ConsenSys",
+        "OpenZeppelin"
+      ],
+      correctAnswer: 1,
+      explanation: "FHEVM was built by Zama, a company specializing in fully homomorphic encryption technology. They provide the tools and infrastructure for privacy-preserving applications.",
+      topic: "FHEVM Ecosystem"
+    }
+  ]}
+/>
