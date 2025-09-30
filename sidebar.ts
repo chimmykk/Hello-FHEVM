@@ -5,7 +5,7 @@ const sidebar = [
             { text: 'FHEVM', link: '/introduction' },
             { text: 'Installation', link: '/installation' },
             { text: 'Getting Started', link: '/getting-started' },
-            { text: 'Dice Game', link: '/dice-game' },
+            { text: 'Dice Game Contract', link: '/dice-game' },
             { text: 'DiceGameDApp Using CDN', link: '/dice-game-dapp' },
             { text: 'DiceGameDApp Using SDK', link: '/dice-game-dapp-relayer-sdk' },
             { text: 'Demo ', link: '/final-demo' },
