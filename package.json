@@ -2,7 +2,9 @@
   "name": "vocspin",
   "version": "0.0.0",
   "type": "module",
-  "presets": ["@babel/preset-env"],
+  "presets": [
+    "@babel/preset-env"
+  ],
   "scripts": {
     "dev": "vocs dev",
     "build": "vocs build",
@@ -11,6 +13,7 @@
   "dependencies": {
     "@geist-ui/react": "^2.2.5",
     "@types/react": "latest",
+    "@vercel/analytics": "^1.5.0",
     "langchain": "^0.2.16",
     "react": "latest",
     "react-dom": "latest",
