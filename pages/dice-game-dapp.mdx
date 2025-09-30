@@ -74,69 +74,64 @@ Using UMD CDN
 ### Update the project code
 Under Public/index.HTML
 Replace with
-``` html
+```html
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/dice-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#ff6b6b" />
-    <meta
-      name="description"
-      content="FHEVM Dice Game - Your first confidential dice game with Zama FHEVM. A privacy-focused dice game built with blockchain technology where dice rolls are encrypted and results remain private until revealed."
-    />
-    <meta name="keywords" content="dice game, blockchain, FHEVM, Zama, confidential, ethereum, smart contract, privacy, crypto, gambling, dice roll" />
-    <meta name="author" content="FHEVM Dice Game" />
-    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin" />
-    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp" />
-    <meta property="og:title" content="FHEVM Dice Game - Confidential Gaming" />
-    <meta property="og:description" content="A privacy-focused dice game built with Zama FHEVM technology. Experience confidential gaming where your rolls remain private!" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="%PUBLIC_URL%/dice-preview.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="FHEVM Dice Game - Confidential Gaming" />
-    <meta name="twitter:description" content="A privacy-focused dice game built with Zama FHEVM technology. Roll the dice with complete privacy!" />
-    <meta name="twitter:image" content="%PUBLIC_URL%/dice-preview.png" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/dice-icon.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    
-    <!-- Zama FHEVM Relayer SDK -->
-    <script src="https://cdn.zama.ai/relayer-sdk-js/0.2.0/relayer-sdk-js.umd.cjs" type="text/javascript" crossorigin="anonymous"></script>
-    
-    <!-- Dice Game Favicon and Icons -->
-    <link rel="shortcut icon" href="%PUBLIC_URL%/dice-icon.png" type="image/png" />
-    
-    <!-- Preload important assets -->
-    <link rel="preload" href="%PUBLIC_URL%/dice-sounds.mp3" as="audio" />
-    
-    <title>FHEVM Dice Game - Confidential Gaming DApp</title>
-  </head>
-  <body>
-    <noscript>
-      <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-        <h2>🎲 FHEVM Dice Game</h2>
-        <p>You need to enable JavaScript to roll the dice and play this confidential game.</p>
-        <p>Please enable JavaScript in your browser settings to continue.</p>
-      </div>
-    </noscript>
-    <div id="root"></div>
-    <!--
-      Welcome to FHEVM Dice Game!
-      
-      This is a confidential dice game built with Zama's FHEVM technology.
-      Features:
-      - Encrypted dice rolls for complete privacy
-      - Fair and verifiable randomness
-      - Blockchain-based smart contracts
-      - Real-time gameplay with instant results
-      
-      To begin development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-      
-      🎲 Roll the dice and experience privacy-preserving gaming!
-    -->
-  </body>
+<head>
+<meta charset="utf-8" />
+<link rel="icon" href="%PUBLIC_URL%/dice-icon.png" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#ff6b6b" />
+<meta name="description" content="FHEVM Dice Game" />
+<meta name="keywords" content="dice game, blockchain, FHEVM, Zama, confidential" />
+<meta name="author" content="FHEVM Dice Game" />
+<meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin" />
+<meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp" />
+<meta property="og:title" content="FHEVM Dice Game - Confidential Gaming" />
+<meta property="og:description" content="A privacy-focused dice game built with Zama!" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="%PUBLIC_URL%/dice-preview.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="FHEVM Dice Game - Confidential Gaming" />
+<meta name="twitter:description" content="dice game built with Zama FHEVM technology!" />
+<meta name="twitter:image" content="%PUBLIC_URL%/dice-preview.png" />
+<link rel="apple-touch-icon" href="%PUBLIC_URL%/dice-icon.png" />
+<link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+<!-- Zama FHEVM Relayer SDK -->
+<script src="https://cdn.zama.ai/relayer-sdk-js/0.2.0/relayer-sdk-js.umd.cjs" 
+        type="text/javascript" crossorigin="anonymous"></script>
+
+<!-- Dice Game Favicon and Icons -->
+<link rel="shortcut icon" href="%PUBLIC_URL%/dice-icon.png" type="image/png" />
+
+<!-- Preload important assets -->
+<link rel="preload" href="%PUBLIC_URL%/dice-sounds.mp3" as="audio" />
+
+<title>FHEVM Dice Game - Confidential Gaming DApp</title>
+</head>
+<body>
+<noscript>
+<div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+<h2>🎲 FHEVM Dice Game</h2>
+<p>You need to enable JavaScript to roll the dice and play this confidential game.</p>
+<p>Please enable JavaScript in your browser settings to continue.</p>
+</div>
+</noscript>
+<div id="root"></div>
+<!--
+Welcome to FHEVM Dice Game!
+
+This is a confidential dice game built with Zama's FHEVM technology.
+Features:
+- Encrypted dice rolls for complete privacy
+- Fair and verifiable randomness
+- Blockchain-based smart contracts
+- Real-time gameplay with instant results
+
+🎲 Roll the dice and experience privacy-preserving gaming!
+-->
+</body>
 </html>
 ```
 Under src/App.js
@@ -285,9 +280,9 @@ const ContractInfo = ({ contractAddress }) => {
           border: '1px solid var(--border-light)',
           borderRadius: '6px'
         }}>
-          <span style={{ color: 'var(--text-secondary)', fontWeight: '600', fontSize: '0.8rem' }}>
+<span style={{ color: 'var(--text-secondary)', fontWeight: '600', fontSize: '0.8rem' }}>
             Contract:
-          </span>
+</span>
           <a
             href={`https://sepolia.etherscan.io/address/${contractAddress}`}
             target="_blank"
@@ -1059,10 +1054,10 @@ export default PlayDice;
 WalletConnect.js
 ```js
 import React from 'react';
-
+ 
 const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, onClaimPastPrize, loading }) => {
   const [showPastRounds, setShowPastRounds] = React.useState(false);
-
+ 
   if (isConnected) {
     return (
       <div>
@@ -1080,7 +1075,7 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
             </span>
           </div>
         </div>
-
+ 
         {/* Past Rounds Section */}
         {pastRounds && pastRounds.length > 0 && (
           <div className="card" style={{ marginTop: '12px', padding: '12px' }}>
@@ -1101,14 +1096,14 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
                 {showPastRounds ? '▼' : '▶'}
               </span>
             </div>
-
+ 
             {showPastRounds && (
               <div style={{ padding: '0 8px 8px 8px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
                   {pastRounds.map((round) => {
                     const isWinner = round.winner.toLowerCase() === account.toLowerCase();
                     const canClaim = isWinner && !round.claimed;
-
+ 
                     return (
                       <div
                         key={round.index}
@@ -1128,19 +1123,19 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
                             {new Date(round.drawTime * 1000).toLocaleDateString()}
                           </span>
                         </div>
-
+ 
                         <div style={{ marginBottom: '4px' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>Winner: </span>
                           <span style={{ fontFamily: 'monospace' }}>
                             {round.winner.slice(0, 4)}...{round.winner.slice(-4)}
                           </span>
                         </div>
-
+ 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>
                             Prize: {round.prize} ETH
                           </span>
-
+ 
                           {isWinner ? (
                             round.claimed ? (
                               <span style={{ color: 'var(--success-color)', fontSize: '0.75rem' }}>✅ Claimed</span>
@@ -1171,7 +1166,7 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
       </div>
     );
   }
-
+ 
   return (
     <div className="card-priority" style={{ 
       maxWidth: '500px', 
@@ -1199,7 +1194,7 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
           Connect your MetaMask wallet to experience confidential dice rolling
         </p>
       </div>
-
+ 
       {/* App Description */}
       <div className="card-secondary" style={{
         borderRadius: '12px',
@@ -1238,7 +1233,7 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
    
         </ul>
       </div>
-
+ 
       <button
         onClick={onConnect}
         disabled={txStatus === 'Connecting...'}
@@ -1255,7 +1250,7 @@ const WalletConnect = ({ isConnected, account, onConnect, txStatus, pastRounds, 
     </div>
   );
 };
-
+ 
 export default WalletConnect;
 ```
 

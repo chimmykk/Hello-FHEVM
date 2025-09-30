@@ -41,3 +41,35 @@
   scrollbar-color: #242424 #141414;
 }
 
+/* Code block font size adjustments */
+pre {
+  font-size: 0.75rem !important;
+  line-height: 1.4 !important;
+}
+
+pre code {
+  font-size: 0.75rem !important;
+  line-height: 1.4 !important;
+}
+
+/* Specific targeting for code blocks in documentation */
+.vocs-content pre {
+  font-size: 0.75rem !important;
+  line-height: 1.4 !important;
+}
+
+.vocs-content pre code {
+  font-size: 0.75rem !important;
+  line-height: 1.4 !important;
+}
+
+/* Target all code elements */
+code {
+  font-size: 0.8rem !important;
+}
+
+/* Make inline code smaller */
+.vocs-content code:not(pre code) {
+  font-size: 0.8rem !important;
+}
+
