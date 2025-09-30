@@ -1,5 +1,5 @@
 // vocs.config.tsx
-import { defineConfig } from "file:///Users/yeiterilsosingkoireng/Downloads/soroban-by-example-main/node_modules/.pnpm/vocs@1.0.0-alpha.55_@types+react@18.3.3_react-dom@18.3.1_react@18.3.1_rollup@4.21.0_typescript@5.5.4/node_modules/vocs/_lib/index.js";
+import { defineConfig } from "file:///Users/yeiterilsosingkoireng/Downloads/hello-fhevm-prod/node_modules/.pnpm/vocs@1.0.0-alpha.55_@types+react@18.3.3_react-dom@18.3.1_react@18.3.1_rollup@4.21.0_typescript@5.5.4/node_modules/vocs/_lib/index.js";
 
 // sidebar.ts
 var sidebar = [
@@ -31,7 +31,7 @@ var sidebar = [
 var sidebar_default = sidebar;
 
 // vocs.config.tsx
-import { Fragment, jsx, jsxs } from "file:///Users/yeiterilsosingkoireng/Downloads/soroban-by-example-main/node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-runtime.js";
+import { Fragment, jsx, jsxs } from "file:///Users/yeiterilsosingkoireng/Downloads/hello-fhevm-prod/node_modules/.pnpm/react@18.3.1/node_modules/react/jsx-runtime.js";
 var vocs_config_default = defineConfig({
   title: "FHEVM by Zama",
   description: "Learn FHEVM by exploring code samples & deploy dapps",

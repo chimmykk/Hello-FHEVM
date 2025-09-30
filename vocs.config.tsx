@@ -66,7 +66,7 @@ export default defineConfig({
      
         {
           text: "Contributing",
-          link: "https://github.com/",
+          link: "https://github.com/chimmykk/Hello-FHEVM/blob/main/CONTRIBUTING.md",
         },
       ],
     },
