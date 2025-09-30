@@ -23,7 +23,7 @@ export default defineConfig({
   socials: [
     {
       icon: "github",
-      link: "https://github.com/chimmykk",
+      link: "https://github.com/chimmykk/Hello-FHEVM",
     },
     {
       icon: "discord",
