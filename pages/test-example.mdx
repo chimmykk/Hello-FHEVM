@@ -3,43 +3,40 @@ Brief and Full summary
 
 A privacy-preserving dice guessing game built with **Zama's FHEVM (Fully Homomorphic Encryption Virtual Machine)** technology. Players can make encrypted guesses and roll dice with complete privacy - only they can decrypt their own results.
 
-## Project Structure
+## CDN Based Project Structure
 - [GitHub Repository to this project ](https://github.com/chimmykk/fhevm-dice-dapp-cdn)
-- Note this project structure is based on CDN integration
+- Note this project structure is for CDN integration.
 ```
 fhevm-dice-dapp/
-├── 📁 contracts/
-│   └── FHEDiceGame.sol           # Main smart contract with FHE logic
-├── 📁 frontend/
-│   ├── 📁 src/
-│   │   ├── 📁 components/        # React components
-│   │   │   ├── Header.js         # App header
-│   │   │   ├── WalletConnect.js  # Wallet connection UI
-│   │   │   ├── PlayDice.js       # Dice gameplay interface
-│   │   │   ├── DiceResults.js    # Results display & decryption
-│   │   │   ├── ContractInfo.js   # Contract information
-│   │   │   ├── Footer.js         # App footer
-│   │   │   └── ...
-│   │   ├── 📁 hooks/            # Custom React hooks
-│   │   │   ├── useWallet.js      # Wallet connection logic
-│   │   │   ├── useDiceGame.js    # Contract interaction
-│   │   │   └── useToast.js       # Notification system
-│   │   ├── App.js               # Main React app
-│   │   ├── App.css              # Styling
-│   │   └── index.js             # Entry point
-│   ├── package.json             # Frontend dependencies
-│   └── public/                  # Static assets
-├── 📁 tasks/
-│   └── FHEDiceGame.ts           # Hardhat tasks for testing
-├── 📁 test/
-│   └── FHEDiceGame.ts           # Contract tests
-├── 📁 deploy/
-│   └── deploy.ts                # Deployment scripts
-├── hardhat.config.ts            # Hardhat configuration
-├── package.json                 # Project dependencies
-└── README.md                    # This file
-```
+├── contracts/             # Smart contracts
+├── frontend/              # React application
+├── tasks/                 # Hardhat tasks
+├── test/                  # Contract tests
+├── deploy/                # Deployment scripts
+├── hardhat.config.ts
+├── package.json
+└── README.md
 
+```
+## SDK Based Project Structure
+- [GitHub Repository to this project ](https://github.com/chimmykk/hello-fhevm-dice-sdk)
+- Note this project structure is for SDK integration.
+```
+hello-fhevm-dice/
+├── LICENSE
+├── README.md
+├── package.json
+├── package-lock.json
+├── tsconfig.json
+├── scripts/
+│
+└── packages/
+    ├── fhevm-hardhat-template/    # Smart contracts & deployment
+    ├── fhevm-react/               # FHE encryption utilities
+    ├── postdeploy/                # Post-deployment scripts
+    └── site/                      # React Frontend application
+
+```
 ##  Game Overview
 
 The **FHEVM Dice Game** is a privacy-first gambling DApp where:
@@ -446,7 +443,8 @@ import { TutorialQuiz } from "../components";
 ---
 ##  Live Demo
 
-**Deployed Contract**: `0xA6915c97f44f1708e37dD871CCE991fD6D45E943` (Sepolia)
+- **Deployed Contract**: `0xA6915c97f44f1708e37dD871CCE991fD6D45E943`
+- (Sepolia)
 **Frontend**: [Using CDN](https://hello-fhevm-game.vercel.app)
 [Using SDK](https://hello-fhevm-dice-site-d7kd.vercel.app/)
 
