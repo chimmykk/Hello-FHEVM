@@ -1,0 +1,1564 @@
+
+# Building a Privacy-Preserving Dice Game with Zama FHEVM Relayer SDK
+
+A comprehensive tutorial on creating a decentralized dice game using FHEVM smart contracts with fully homomorphic encryption.
+
+## Overview
+
+This tutorial will guide you through building a complete Dice Game DApp powered by Zama's FHEVM technology. You'll learn how to:
+
+- Set up a repository with smart contracts and frontend
+- Deploy FHEVM-enabled smart contracts
+- Build a React frontend with encrypted interactions
+- Integrate the Zama Relayer SDK for homomorphic encryption
+- Create a privacy-preserving gaming experience
+
+## Prerequisites
+
+- **Node.js**: Version 20 or higher
+- **MetaMask**: Browser extension for wallet connection
+- Basic understanding of React, Next.js, and blockchain development
+- Familiarity with Hardhat & Ethers.js
+- Knowledge of FHEVM and homomorphic encryption concepts
+
+## Project Structure
+
+This tutorial uses a repository structure of official Zama hardhat template [fhevm-react-template](https://github.com/zama-ai/fhevm-react-template) :
+
+```
+hello-fhevm-main/
+├── LICENSE                        # Project license
+├── package.json                   # Root package configuration
+├── README.md                      # Project documentation
+├── TUTORIAL.md                    # Tutorial documentation
+├── tsconfig.json                  # TypeScript configuration
+├── package-lock.json              # NPM lock file
+├── pnpm-lock.yaml                 # PNPM lock file
+├── node_modules/                  # Dependencies
+├── packages/
+│   ├── fhevm-hardhat-template/    # Smart contracts and deployment
+│   │   ├── artifacts/             # Compiled contract artifacts
+│   │   ├── cache/                 # Hardhat cache
+│   │   ├── contracts/             # Solidity smart contracts
+│   │   ├── deploy/                # Deployment scripts
+│   │   ├── deployments/           # Deployment artifacts
+│   │   ├── fhevmTemp/             # FHEVM temporary files
+│   │   ├── tasks/                 # Hardhat task scripts
+│   │   ├── test/                  # Contract tests
+│   │   ├── types/                 # TypeScript type definitions
+│   │   ├── hardhat.config.ts      # Hardhat configuration
+│   │   ├── package.json           # Package configuration
+│   │   ├── tsconfig.json          # TypeScript configuration
+│   │   ├── LICENSE                # Package license
+│   │   └── README.md              # Package documentation
+│   ├── fhevm-react/               # FHEVM React hooks and utilities
+│   │   ├── internal/              # Internal implementation files
+│   │   ├── node_modules/          # Package dependencies
+│   │   ├── FhevmDecryptionSignature.ts # EIP-712 decryption signatures
+│   │   ├── fhevmTypes.ts          # TypeScript type definitions
+│   │   ├── GenericStringStorage.ts # Storage abstraction
+│   │   ├── index.ts               # Package exports
+│   │   ├── useFhevm.tsx           # Main React hook
+│   │   ├── userFhevm.test.tsx     # Test files
+│   │   └── package.json           # Package configuration
+│   ├── site/                      # Next.js frontend application
+│   │   ├── abi/                   # Contract ABIs and addresses
+│   │   ├── app/                   # Next.js app directory
+│   │   ├── components/            # React components
+│   │   ├── hooks/                 # Custom React hooks
+│   │   ├── public/                # Static assets
+│   │   ├── node_modules/          # Dependencies
+│   │   ├── components.json        # Component configuration
+│   │   ├── eslint.config.mjs      # ESLint configuration
+│   │   ├── next-env.d.ts          # Next.js type definitions
+│   │   ├── next.config.ts         # Next.js configuration
+│   │   ├── package.json           # Package configuration
+│   │   ├── postcss.config.mjs     # PostCSS configuration
+│   │   ├── README.md              # Package documentation
+│   │   ├── tailwind.config.ts     # Tailwind CSS configuration
+│   │   ├── tsconfig.json          # TypeScript configuration
+│   │   ├── vitest.config.ts       # Vitest configuration
+│   │   └── LICENSE                # Package license
+│   └── postdeploy/                # Post-deployment utilities
+│       ├── index.ts               # Main postdeploy script
+│       └── package.json           # Package configuration
+└── scripts/                       # Build and deployment scripts
+    ├── deploy-hardhat-node.sh     # Deploy to local hardhat node
+    ├── generate-site-abi.mjs      # Generate ABI files for frontend
+    ├── is-hardhat-node-running.mjs # Check if hardhat node is running
+    └── utils.mjs                  # Utility functions
+```
+
+## Step 1: Project Setup
+
+### 1.1 Clone and Install Dependencies
+
+```bash
+git clone https://github.com/zama-ai/fhevm-react-template
+cd hello-fhevm-main
+npm install
+```
+
+### 1.2 Navigate to Hardhat Project
+
+```bash
+cd packages/fhevm-hardhat-template
+npm install
+```
+
+### 1.3 Update Dice Game Contract
+
+Under `contracts/` directory, create or update the Dice game Solidity code:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+ 
+import {FHE, euint32, externalEuint32, ebool} from "@fhevm/solidity/lib/FHE.sol";
+import {SepoliaConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
+ 
+/// @title A privacy-preserving FHE dice game contract
+/// @author fhevm-hardhat-template
+contract FHEDiceGame is SepoliaConfig {
+    euint32 private _lastDiceRoll;
+    euint32 private _playerGuess;
+    ebool private _isWinner; // Encrypted winner status
+    address public owner;
+ 
+    uint256 public constant ENTRY_FEE = 0.0002 ether;
+ 
+    // Custom errors for gas optimization
+    error IncorrectEntryFee();
+    error OnlyOwnerCanWithdraw();
+ 
+    constructor() {
+        owner = msg.sender;
+    }
+ 
+    /// @notice Returns the last encrypted dice roll
+    function getLastDiceRoll() external view returns (euint32) {
+        return _lastDiceRoll;
+    }
+ 
+    /// @notice Returns the player's encrypted guess
+    function getPlayerGuess() external view returns (euint32) {
+        return _playerGuess;
+    }
+ 
+    /// @notice Returns the encrypted winner status
+    function getWinnerStatus() external view returns (ebool) {
+        return _isWinner;
+    }
+ 
+    /// @notice Play the dice game with encrypted inputs
+    /// @param inputSeed the encrypted seed
+    /// @param seedProof the seed proof
+    /// @param inputGuess the encrypted guess (1-6)
+    /// @param guessProof the guess proof
+    function playDice(
+        externalEuint32 inputSeed,
+        bytes calldata seedProof,
+        externalEuint32 inputGuess,
+        bytes calldata guessProof
+    ) external payable {
+        if (msg.value != ENTRY_FEE) revert IncorrectEntryFee();
+ 
+        // Convert external encrypted inputs to internal euint32
+        euint32 encryptedSeed = FHE.fromExternal(inputSeed, seedProof);
+        euint32 encryptedGuess = FHE.fromExternal(inputGuess, guessProof);
+ 
+        // Store encrypted values
+        _playerGuess = encryptedGuess;
+        _lastDiceRoll = _generateDiceRoll(encryptedSeed);
+ 
+        // Core FHE Logic: Determine if the player is a winner on-chain
+        _isWinner = FHE.eq(_lastDiceRoll, _playerGuess);
+ 
+        // Allow the player to access their own encrypted
+        // values for off-chain decryption
+        FHE.allowThis(_lastDiceRoll);
+        FHE.allow(_lastDiceRoll, msg.sender);
+        FHE.allowThis(_playerGuess);
+        FHE.allow(_playerGuess, msg.sender);
+        FHE.allowThis(_isWinner);
+        FHE.allow(_isWinner, msg.sender);
+    }
+ 
+    /// @notice Generate a dice roll from encrypted seed
+    function _generateDiceRoll(euint32 seed) internal returns (euint32) {
+        euint32 salt = FHE.asEuint32(42);
+        euint32 combined = FHE.add(seed, salt);
+        euint32 mask = FHE.asEuint32(7);
+        euint32 masked = FHE.and(combined, mask);
+        euint32 one = FHE.asEuint32(1);
+        euint32 result = FHE.add(masked, one);
+        euint32 six = FHE.asEuint32(6);
+        return FHE.min(result, six);
+    }
+ 
+    /// @notice Withdraw contract balance (owner only)
+    function withdraw() external {
+        if (msg.sender != owner) revert OnlyOwnerCanWithdraw();
+        payable(owner).transfer(address(this).balance);
+    }
+ 
+    /// @notice Fund the contract
+    receive() external payable {}
+}
+```
+
+### 1.4 Deploy Script
+
+Create the deploy script in `deploy/deploy.ts`:
+
+```typescript
+// deploy/deploy.ts
+
+import { DeployFunction } from "hardhat-deploy/types";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  const { deployer } = await hre.getNamedAccounts();
+  const { deploy } = hre.deployments;
+
+  const deployedFHEDiceGame = await deploy("FHEDiceGame", {
+    from: deployer,
+    log: true,
+  });
+
+  console.log(`FHEDiceGame contract deployed to: ${deployedFHEDiceGame.address}`);
+};
+export default func;
+func.id = "deploy_fhe_dice_game";
+func.tags = ["FHEDiceGame"];
+```
+
+### 1.5 Test Script
+
+Create comprehensive tests in `test/FHEDiceGame.ts`:
+
+```typescript
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { ethers, fhevm } from "hardhat";
+import { FHEDiceGame } from "../types";
+import { expect } from "chai";
+import { FhevmType } from "@fhevm/hardhat-plugin";
+
+type Signers = {
+  deployer: HardhatEthersSigner;
+  alice: HardhatEthersSigner;
+  bob: HardhatEthersSigner;
+};
+
+async function deployFixture() {
+  const factory = await ethers.getContractFactory("FHEDiceGame");
+  const fheDiceGameContract = (await factory.deploy()) as FHEDiceGame;
+  const fheDiceGameContractAddress = await fheDiceGameContract.getAddress();
+
+  return { fheDiceGameContract, fheDiceGameContractAddress };
+}
+
+describe("FHEDiceGame", function () {
+  let signers: Signers;
+  let fheDiceGameContract: FHEDiceGame;
+  let fheDiceGameContractAddress: string;
+
+  before(async function () {
+    const ethSigners: HardhatEthersSigner[] = await ethers.getSigners();
+    signers = { deployer: ethSigners[0], alice: ethSigners[1], bob: ethSigners[2] };
+  });
+
+  beforeEach(async function () {
+    // Check whether the tests are running against an FHEVM mock environment
+    if (!fhevm.isMock) {
+      console.warn(`This hardhat test suite cannot run on Sepolia Testnet`);
+      this.skip();
+    }
+
+    ({ fheDiceGameContract, fheDiceGameContractAddress } = await deployFixture());
+  });
+
+  it("encrypted dice roll should be uninitialized after deployment", async function () {
+    const encryptedDiceRoll = await fheDiceGameContract.getLastDiceRoll();
+    // Expect initial dice roll to be bytes32(0) after deployment,
+    // (meaning the encrypted dice roll value is uninitialized)
+    expect(encryptedDiceRoll).to.eq(ethers.ZeroHash);
+  });
+
+  it("encrypted player guess should be uninitialized after deployment", async function () {
+    const encryptedPlayerGuess = await fheDiceGameContract.getPlayerGuess();
+    // Expect initial player guess to be bytes32(0) after deployment,
+    // (meaning the encrypted player guess value is uninitialized)
+    expect(encryptedPlayerGuess).to.eq(ethers.ZeroHash);
+  });
+
+  it("should play dice game and generate valid dice roll", async function () {
+    const encryptedDiceRollBefore = await fheDiceGameContract.getLastDiceRoll();
+    expect(encryptedDiceRollBefore).to.eq(ethers.ZeroHash);
+    const encryptedPlayerGuessBefore = await fheDiceGameContract.getPlayerGuess();
+    expect(encryptedPlayerGuessBefore).to.eq(ethers.ZeroHash);
+
+    // Encrypt seed value
+    const seedValue = 12345;
+    const encryptedSeed = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(seedValue)
+      .encrypt();
+
+    // Encrypt guess value (1-6)
+    const guessValue = 4;
+    const encryptedGuess = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(guessValue)
+      .encrypt();
+
+    // Play the dice game with correct entry fee
+    const entryFee = ethers.parseEther("0.0002");
+    const tx = await fheDiceGameContract
+      .connect(signers.alice)
+      .playDice(
+        encryptedSeed.handles[0],
+        encryptedSeed.inputProof,
+        encryptedGuess.handles[0],
+        encryptedGuess.inputProof,
+        { value: entryFee },
+      );
+    await tx.wait();
+
+    // Get and decrypt the dice roll
+    const encryptedDiceRollAfter = await fheDiceGameContract.getLastDiceRoll();
+    const clearDiceRoll = await fhevm.userDecryptEuint(
+      FhevmType.euint32,
+      encryptedDiceRollAfter,
+      fheDiceGameContractAddress,
+      signers.alice,
+    );
+
+    // Get and decrypt the player guess
+    const encryptedPlayerGuessAfter = await fheDiceGameContract.getPlayerGuess();
+    const clearPlayerGuess = await fhevm.userDecryptEuint(
+      FhevmType.euint32,
+      encryptedPlayerGuessAfter,
+      fheDiceGameContractAddress,
+      signers.alice,
+    );
+
+    // Verify dice roll is between 1 and 6
+    expect(clearDiceRoll).to.be.greaterThanOrEqual(1);
+    expect(clearDiceRoll).to.be.lessThanOrEqual(6);
+
+    // Verify player guess matches what we sent
+    expect(clearPlayerGuess).to.eq(guessValue);
+  });
+
+  it("should play multiple games and track last values correctly", async function () {
+    const entryFee = ethers.parseEther("0.0002");
+
+    // First game
+    const seedValue1 = 11111;
+    const guessValue1 = 2;
+    const encryptedSeed1 = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(seedValue1)
+      .encrypt();
+    const encryptedGuess1 = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(guessValue1)
+      .encrypt();
+
+    let tx = await fheDiceGameContract
+      .connect(signers.alice)
+      .playDice(
+        encryptedSeed1.handles[0],
+        encryptedSeed1.inputProof,
+        encryptedGuess1.handles[0],
+        encryptedGuess1.inputProof,
+        { value: entryFee },
+      );
+    await tx.wait();
+
+    // Second game with different values
+    const seedValue2 = 22222;
+    const guessValue2 = 5;
+    const encryptedSeed2 = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(seedValue2)
+      .encrypt();
+    const encryptedGuess2 = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(guessValue2)
+      .encrypt();
+
+    tx = await fheDiceGameContract
+      .connect(signers.alice)
+      .playDice(
+        encryptedSeed2.handles[0],
+        encryptedSeed2.inputProof,
+        encryptedGuess2.handles[0],
+        encryptedGuess2.inputProof,
+        { value: entryFee },
+      );
+    await tx.wait();
+
+    // Verify the contract tracks the LAST game's values
+    const encryptedDiceRoll = await fheDiceGameContract.getLastDiceRoll();
+    const clearDiceRoll = await fhevm.userDecryptEuint(
+      FhevmType.euint32,
+      encryptedDiceRoll,
+      fheDiceGameContractAddress,
+      signers.alice,
+    );
+
+    const encryptedPlayerGuess = await fheDiceGameContract.getPlayerGuess();
+    const clearPlayerGuess = await fhevm.userDecryptEuint(
+      FhevmType.euint32,
+      encryptedPlayerGuess,
+      fheDiceGameContractAddress,
+      signers.alice,
+    );
+
+    // Should have the values from the second (last) game
+    expect(clearDiceRoll).to.be.greaterThanOrEqual(1);
+    expect(clearDiceRoll).to.be.lessThanOrEqual(6);
+    expect(clearPlayerGuess).to.eq(guessValue2);
+  });
+
+  it("should revert with incorrect entry fee", async function () {
+    // Encrypt seed and guess values
+    const seedValue = 98765;
+    const guessValue = 3;
+
+    const encryptedSeed = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(seedValue)
+      .encrypt();
+
+    const encryptedGuess = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(guessValue)
+      .encrypt();
+
+    // Try with incorrect entry fee (too low)
+    const incorrectFee = ethers.parseEther("0.0001");
+    await expect(
+      fheDiceGameContract
+        .connect(signers.alice)
+        .playDice(
+          encryptedSeed.handles[0],
+          encryptedSeed.inputProof,
+          encryptedGuess.handles[0],
+          encryptedGuess.inputProof,
+          { value: incorrectFee },
+        ),
+    ).to.be.revertedWithCustomError(fheDiceGameContract, "IncorrectEntryFee");
+  });
+
+  it("should allow owner to withdraw funds", async function () {
+    // First, add some funds by playing the game
+    const seedValue = 54321;
+    const guessValue = 6;
+
+    const encryptedSeed = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(seedValue)
+      .encrypt();
+
+    const encryptedGuess = await fhevm
+      .createEncryptedInput(fheDiceGameContractAddress, signers.alice.address)
+      .add32(guessValue)
+      .encrypt();
+
+    const entryFee = ethers.parseEther("0.0002");
+    await fheDiceGameContract
+      .connect(signers.alice)
+      .playDice(
+        encryptedSeed.handles[0],
+        encryptedSeed.inputProof,
+        encryptedGuess.handles[0],
+        encryptedGuess.inputProof,
+        { value: entryFee },
+      );
+
+    // Get contract balance before withdrawal
+    const contractBalanceBefore = await ethers.provider.getBalance(fheDiceGameContractAddress);
+    expect(contractBalanceBefore).to.be.greaterThan(0);
+
+    // Owner withdraws funds
+    const tx = await fheDiceGameContract.connect(signers.deployer).withdraw();
+    await tx.wait();
+
+    // Check contract balance is now 0
+    const contractBalanceAfter = await ethers.provider.getBalance(fheDiceGameContractAddress);
+    expect(contractBalanceAfter).to.eq(0);
+  });
+
+  it("should prevent non-owner from withdrawing", async function () {
+    await expect(fheDiceGameContract.connect(signers.alice).withdraw()).to.be.revertedWithCustomError(
+      fheDiceGameContract,
+      "OnlyOwnerCanWithdraw",
+    );
+  });
+});
+```
+
+### 1.6 Task Scripts
+
+Create task scripts in `tasks/FHEDiceGame.ts`:
+
+```typescript
+import { task } from "hardhat/config";
+import { FhevmType } from "@fhevm/hardhat-plugin";
+
+/**
+ * Example:
+ *   - npx hardhat --network localhost task:dice-address
+ *   - npx hardhat --network sepolia task:dice-address
+ */
+task("task:dice-address", "Prints the FHEDiceGame address").setAction(async function (_taskArguments, hre) {
+  const { deployments } = hre;
+  const fheDice = await deployments.get("FHEDiceGame");
+  console.log("FHEDiceGame address is " + fheDice.address);
+});
+
+/**
+ * Example:
+ *   - npx hardhat --network localhost task:play-dice --guess 4 --seed 12345
+ *   - npx hardhat --network sepolia task:play-dice --guess 2 --seed 54321
+ */
+task("task:play-dice", "Play FHEDiceGame by providing guess and seed")
+  .addParam("guess", "The dice guess between 1 and 6")
+  .addParam("seed", "Random seed for dice roll")
+  .addOptionalParam("address", "Optionally specify the FHEDiceGame contract address")
+  .setAction(async function (taskArguments, hre) {
+    const { ethers, deployments, fhevm } = hre;
+
+    const guess = parseInt(taskArguments.guess);
+    const seed = parseInt(taskArguments.seed);
+
+    if (!Number.isInteger(guess) || guess < 1 || guess > 6) {
+      throw new Error(`--guess must be integer between 1 and 6`);
+    }
+    if (!Number.isInteger(seed)) {
+      throw new Error(`--seed must be an integer`);
+    }
+
+    await fhevm.initializeCLIApi();
+
+    const FHEDiceDeployment = taskArguments.address
+      ? { address: taskArguments.address }
+      : await deployments.get("FHEDiceGame");
+
+    console.log(`FHEDiceGame: ${FHEDiceDeployment.address}`);
+
+    const [signer] = await ethers.getSigners();
+    const fheDiceContract = await ethers.getContractAt("FHEDiceGame", FHEDiceDeployment.address);
+
+    // Encrypt seed and guess
+    const encryptedSeed = await fhevm
+      .createEncryptedInput(FHEDiceDeployment.address, signer.address)
+      .add32(seed)
+      .encrypt();
+
+    const encryptedGuess = await fhevm
+      .createEncryptedInput(FHEDiceDeployment.address, signer.address)
+      .add32(guess)
+      .encrypt();
+
+    // Get entry fee
+    const entryFee = await fheDiceContract.ENTRY_FEE();
+    console.log(`💰 Entry fee: ${ethers.formatEther(entryFee)} ETH`);
+
+    // Send tx
+    const tx = await fheDiceContract
+      .connect(signer)
+      .playDice(
+        encryptedSeed.handles[0],
+        encryptedSeed.inputProof,
+        encryptedGuess.handles[0],
+        encryptedGuess.inputProof,
+        { value: entryFee },
+      );
+
+    console.log(`Wait for tx:${tx.hash}...`);
+    const receipt = await tx.wait();
+    console.log(`tx:${tx.hash} status=${receipt?.status}`);
+
+    console.log(`FHEDiceGame playDice(guess=${guess}, seed=${seed}) succeeded!`);
+  });
+
+/**
+ * Example:
+ *   - npx hardhat --network localhost task:dice-result
+ *   - npx hardhat --network sepolia task:dice-result
+ */
+task("task:dice-result", "Fetch the last dice roll and winner status")
+  .addOptionalParam("address", "Optionally specify the FHEDiceGame contract address")
+  .setAction(async function (taskArguments, hre) {
+    const { ethers, deployments, fhevm } = hre;
+
+    await fhevm.initializeCLIApi();
+
+    const FHEDiceDeployment = taskArguments.address
+      ? { address: taskArguments.address }
+      : await deployments.get("FHEDiceGame");
+    console.log(`FHEDiceGame: ${FHEDiceDeployment.address}`);
+
+    const [signer] = await ethers.getSigners();
+    const fheDiceContract = await ethers.getContractAt("FHEDiceGame", FHEDiceDeployment.address);
+
+    const encryptedDiceRoll = await fheDiceContract.getLastDiceRoll();
+    const encryptedWinnerStatus = await fheDiceContract.getWinnerStatus();
+
+    if (encryptedDiceRoll === ethers.ZeroHash) {
+      console.log("No game played yet.");
+      return;
+    }
+
+    const clearDiceRoll = await fhevm.userDecryptEuint(
+      FhevmType.euint32,
+      encryptedDiceRoll,
+      FHEDiceDeployment.address,
+      signer,
+    );
+
+    const clearWinnerStatus = await fhevm.userDecryptEuint(
+      FhevmType.euint32,
+      encryptedWinnerStatus,
+      FHEDiceDeployment.address,
+      signer,
+    );
+
+    console.log("Encrypted Dice Roll   :", encryptedDiceRoll);
+    console.log("Clear Dice Roll       :", clearDiceRoll.toString());
+    console.log("Encrypted Winner Stat :", encryptedWinnerStatus);
+    console.log("Clear Winner Stat     :", clearWinnerStatus.toString());
+  });
+```
+
+### 1.7 Hardhat Configuration
+
+Update `hardhat.config.ts`:
+
+```typescript
+import "@fhevm/hardhat-plugin";
+import "@nomicfoundation/hardhat-chai-matchers";
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-verify";
+import "@typechain/hardhat";
+import "hardhat-deploy";
+import "hardhat-gas-reporter";
+import type { HardhatUserConfig } from "hardhat/config";
+import { vars } from "hardhat/config";
+import "solidity-coverage";
+
+import "./tasks/accounts";
+import "./tasks/FHEDiceGame";
+
+// Run 'npx hardhat vars setup' to see the list of variables that need to be set
+
+const MNEMONIC: string = vars.get("MNEMONIC", "zzzzzz");
+const INFURA_API_KEY: string = vars.get("INFURA_API_KEY", "");
+
+const config: HardhatUserConfig = {
+  defaultNetwork: "hardhat",
+  namedAccounts: {
+    deployer: 0,
+  },
+  etherscan: {
+    apiKey: {
+      sepolia: process.env.ETHERSCAN_API_KEY || "",
+    },
+    customChains: [
+      {
+        network: "sepolia",
+        chainId: 11155111,
+        urls: {
+          apiURL: "https://api-sepolia.etherscan.io/api",
+          browserURL: "https://sepolia.etherscan.io",
+        },
+      },
+    ],
+  },
+
+  gasReporter: {
+    currency: "USD",
+    enabled: process.env.REPORT_GAS ? true : false,
+    excludeContracts: [],
+  },
+  networks: {
+    hardhat: {
+      accounts: {
+        mnemonic: MNEMONIC,
+      },
+      chainId: 31337,
+    },
+    anvil: {
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: "m/44'/60'/0'/0/",
+        count: 10,
+      },
+      chainId: 31337,
+      url: "http://localhost:8545",
+    },
+    sepolia: {
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: "m/44'/60'/0'/0/",
+        count: 10,
+      },
+      chainId: 11155111,
+      url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
+    },
+  },
+  paths: {
+    artifacts: "./artifacts",
+    cache: "./cache",
+    sources: "./contracts",
+    tests: "./test",
+  },
+  solidity: {
+    version: "0.8.27",
+    settings: {
+      metadata: {
+        // Not including the metadata hash
+        // https://github.com/paulrberg/hardhat-template/issues/31
+        bytecodeHash: "none",
+      },
+      // Disable the optimizer when debugging
+      // https://hardhat.org/hardhat-network/#solidity-optimizer-support
+      optimizer: {
+        enabled: true,
+        runs: 800,
+      },
+      evmVersion: "cancun",
+    },
+  },
+  typechain: {
+    outDir: "types",
+    target: "ethers-v6",
+  },
+};
+
+export default config;
+```
+
+### 1.8 Compile and Test
+
+Compile the contracts:
+
+```bash
+npx hardhat compile
+```
+
+Run the tests:
+
+```bash
+npx hardhat test
+```
+
+## Step 2: Deployment and ABI Generation
+
+### 2.1 Deploy to Sepolia
+
+```bash
+# Deploy smart contracts to Sepolia testnet
+npx hardhat deploy --network sepolia
+```
+
+### 2.2 Generate ABI Files
+
+After deployment, generate the ABI files for frontend integration. Create a `run-postdeploy.ts` file in the hardhat template directory:
+
+```typescript
+import { postDeploy } from '../postdeploy/index';
+
+// Get command line arguments
+const chainName = process.argv[2] || 'sepolia';
+const contractName = process.argv[3] || 'FHEDiceGame';
+
+console.log(`Running postdeploy for ${contractName} on ${chainName}...`);
+
+try {
+  postDeploy(chainName, contractName);
+  console.log('Postdeploy completed successfully!');
+} catch (error) {
+  console.error(' Postdeploy failed:', error);
+  process.exit(1);
+}
+```
+
+Run this code:
+
+```bash
+npx ts-node run-postdeploy.ts sepolia FHEDiceGame
+```
+
+This creates the necessary TypeScript files in `packages/site/abi/`:
+- `FHEDiceGameABI.ts` - Contract ABI
+- `FHEDiceGameAddresses.ts` - Contract addresses
+
+**Example Generated Files:**
+
+```typescript
+// FHEDiceGameABI.ts
+export const FHEDiceGameABI = {
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "externalEuint32",
+          "name": "inputSeed",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "seedProof",
+          "type": "bytes"
+        },
+        {
+          "internalType": "externalEuint32",
+          "name": "inputGuess",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes",
+          "name": "guessProof",
+          "type": "bytes"
+        }
+      ],
+      "name": "playDice",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    // ... rest of the ABI
+  ]
+} as const;
+
+// FHEDiceGameAddresses.ts
+export const FHEDiceGameAddresses = { 
+  "11155111": { address: "0x31630746e870D3D57e8B708ac479f269e1Da4c10", chainId: 11155111, chainName: "sepolia" },
+  "31337": { address: "0x31630746e870D3D57e8B708ac479f269e1Da4c10", chainId: 31337, chainName: "hardhat" },
+};
+```
+
+**Why This Step is Critical:**
+
+- **Type Safety**: Provides TypeScript types for contract interactions
+- **Address Management**: Automatically handles different network addresses
+- **ABI Synchronization**: Ensures frontend ABI matches deployed contract
+- **Development Workflow**: Enables seamless development across networks
+
+## Step 3: Frontend Integration with @fhevm/react
+
+### 3.1 Project Structure
+
+The frontend is built with Next.js 15 and React 19, located in `packages/site/`:
+
+```
+packages/site/
+├── app/                   # Next.js app directory
+│   ├── layout.tsx        # Root layout
+│   ├── page.tsx          # Home page
+│   └── providers.tsx     # Context providers
+├── components/            # React components
+│   ├── DiceNarration.tsx # Main game component
+│   ├── PlayDice.tsx      # Dice rolling interface
+│   ├── DiceResults.tsx   # Results display
+│   └── ConnectButton.tsx # Wallet connection
+├── hooks/                 # Custom React hooks
+│   ├── useDiceGame.tsx   # Game logic hook
+│   └── metamask/         # MetaMask integration
+└── abi/                   # Contract ABIs and addresses
+```
+
+### 3.2 Install Dependencies
+
+Install @fhevm/react and other dependencies in the `packages/site/` directory:
+
+```bash
+cd packages/site
+npm install @fhevm/react
+```
+
+### 3.3 Understanding the @fhevm/react Package
+
+The `@fhevm/react` package provides React hooks and utilities for FHEVM integration:
+
+```
+packages/fhevm-react/
+├── internal/
+│   ├── RelayerSDKLoader.ts    # SDK loading logic
+│   ├── PublicKeyStorage.ts    # Key storage management
+│   ├── fhevm.ts              # Core FHEVM instance creation
+│   └── mock/                 # Mock implementations for testing
+├── useFhevm.tsx              # Main React hook
+├── FhevmDecryptionSignature.ts # Decryption signature handling
+└── GenericStringStorage.ts   # Storage abstraction
+```
+
+### 3.4 Using the useFhevm Hook
+
+The `useFhevm` hook provides a clean interface for FHEVM integration:
+
+```typescript
+import { useFhevm } from "@fhevm/react";
+
+const {
+  instance: fhevmInstance,
+  status: fhevmStatus,
+  error: fhevmError,
+} = useFhevm({
+  provider,
+  chainId,
+  initialMockChains: {
+    11155111: "https://sepolia.infura.io/v3/YOUR_INFURA_KEY"
+  },
+  enabled: true,
+});
+```
+
+## Step 4: Core Game Implementation
+
+### 4.1 MetaMask Integration Hooks
+
+The project includes comprehensive MetaMask integration hooks in `packages/site/hooks/metamask/`:
+
+**Key Hooks:**
+- **`useEip6963.ts`** - EIP-6963 provider discovery
+- **`useMetaMask.ts`** - Core MetaMask connection management
+- **`useMetaMaskEthersSigner.ts`** - Ethers.js signer integration
+
+**EIP-6963 Provider Discovery:**
+```typescript
+export function useEip6963(): Eip6963State {
+  const [error, setError] = useState<Error | undefined>(undefined);
+  const [uuids, setUuids] = useState<
+    Record<string, Eip6963ProviderDetail> | undefined
+  >(undefined);
+  // ... provider discovery logic
+}
+```
+
+**MetaMask Connection Management:**
+```typescript
+export function useMetaMask(): UseMetaMaskState {
+  const { provider, chainId, accounts, isConnected, error, connect } =
+    useMetaMaskInternal();
+  // ... connection management logic
+}
+```
+
+### 4.2 Core Game Hook: useDiceGame with @fhevm/react
+
+The `useDiceGame.tsx` hook integrates with the **@fhevm/react package** to handle all FHEVM interactions:
+
+```typescript
+// In DiceNarration.tsx - Main component setup
+import { useFhevm } from "@fhevm/react";
+
+const {
+  instance: fhevmInstance,
+  status: fhevmStatus,
+  error: fhevmError,
+} = useFhevm({
+  provider,
+  chainId,
+  initialMockChains: {
+    11155111: "https://sepolia.infura.io/v3/YOUR_INFURA_KEY"
+  },
+  enabled: true,
+});
+
+// Pass the FHEVM instance to the game hook
+const diceGame = useDiceGame(
+  accounts?.[0] as `0x${string}` | undefined,
+  showToast,
+  setTxStatus,
+  contractAddress as `0x${string}` | undefined,
+  fhevmInstance
+);
+```
+
+**Updated useDiceGame Hook:**
+```typescript
+import { SetStateAction, useEffect, useState } from 'react';
+import { BrowserProvider, Contract, parseEther, hexlify, BytesLike } from 'ethers';
+
+export const useDiceGame = (
+  account: `0x${string}` | undefined, 
+  showToast: ShowToastFunction, 
+  setTxStatus: SetTxStatusFunction, 
+  contractAddress: `0x${string}` | undefined,
+  fhevmInstance: any
+) => {
+  const [contract, setContract] = useState<Contract | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [entryFeeWei, setEntryFeeWei] = useState<bigint | null>(null);
+  const [encryptedState, setEncryptedState] = useState<{
+    lastDiceRoll: string;
+    playerGuess: string;
+    winnerStatus: string;
+  }>({
+    lastDiceRoll: '0x',
+    playerGuess: '0x',
+    winnerStatus: '0x'
+  });
+  const [decryptedState, setDecryptedState] = useState<{
+    lastDiceRoll: number | null;
+    playerGuess: number | null;
+    winnerStatus: boolean | null;
+  }>({
+    lastDiceRoll: null,
+    playerGuess: null,
+    winnerStatus: null
+  });
+  const [fairness, setFairness] = useState<{
+    seed: number;
+    guess: number;
+    commitment: string;
+    txHash: string;
+  } | null>(null);
+
+  const abi = [
+    "function ENTRY_FEE() view returns (uint256)",
+    "function owner() view returns (address)",
+    "function getLastDiceRoll() view returns (bytes32)",
+    "function getPlayerGuess() view returns (bytes32)",
+    "function getWinnerStatus() view returns (bytes32)",
+    "function playDice(bytes32,bytes,bytes32,bytes) payable",
+    "function withdraw()"
+  ];
+
+  const playDice = async (seedNumber: number, guessNumber: number) => {
+    if (!contract || !fhevmInstance) return;
+    if (
+      typeof seedNumber !== 'number' || Number.isNaN(seedNumber) ||
+      typeof guessNumber !== 'number' || Number.isNaN(guessNumber) ||
+      guessNumber < 1 || guessNumber > 6
+    ) {
+      showToast('Enter a valid seed and a guess between 1-6', 'warning');
+      return;
+    }
+
+    setLoading(true);
+    setTxStatus('Encrypting seed and guess...');
+    try {
+      // Prepare encrypted inputs using FHEVM instance
+      const seedInput = await fhevmInstance.createEncryptedInput(contractAddress, account);
+      await seedInput.add32(seedNumber);
+      const seedEnc = await seedInput.encrypt();
+
+      const guessInput = await fhevmInstance.createEncryptedInput(contractAddress, account);
+      await guessInput.add32(guessNumber);
+      const guessEnc = await guessInput.encrypt();
+
+      // Extract handles and proofs
+      const firstSeed = (seedEnc.handles && seedEnc.handles[0]) || seedEnc.handle || seedEnc.inputHandle;
+      const firstGuess = (guessEnc.handles && guessEnc.handles[0]) || guessEnc.handle || guessEnc.inputHandle;
+      let seedHandle = typeof firstSeed === 'object' && firstSeed?.handle ? firstSeed.handle : firstSeed;
+      let guessHandle = typeof firstGuess === 'object' && firstGuess?.handle ? firstGuess.handle : firstGuess;
+      let seedProof = seedEnc.inputProof || seedEnc.proof;
+      let guessProof = guessEnc.inputProof || guessEnc.proof;
+
+      // Normalize to hex strings
+      const toHex = (v: BytesLike | undefined): string => {
+        if (!v) return '0x';
+        if (typeof v === 'string') return v.startsWith('0x') ? v : `0x${v}`;
+        try { return hexlify(v); } catch { return '0x'; }
+      };
+      const padToBytes32 = (hex: string): string => {
+        if (!hex) return '0x0000000000000000000000000000000000000000000000000000000000000000';
+        let h = hex.toLowerCase();
+        if (!h.startsWith('0x')) h = `0x${h}`;
+        h = h.replace(/^0x/, '');
+        if (h.length > 64) h = h.slice(h.length - 64);
+        return '0x' + h.padStart(64, '0');
+      };
+      seedHandle = padToBytes32(toHex(seedHandle));
+      guessHandle = padToBytes32(toHex(guessHandle));
+      seedProof = toHex(seedProof);
+      guessProof = toHex(guessProof);
+
+      if (!seedHandle || !seedProof || !guessHandle || !guessProof) {
+        showToast('Encryption output missing handle or proof', 'error');
+        setLoading(false);
+        setTxStatus('');
+        return;
+      }
+
+      // Compute fairness commitment
+      const buffer = new TextEncoder().encode(String(seedNumber));
+      const digest = await window.crypto.subtle.digest('SHA-256', buffer);
+      const bytes = Array.from(new Uint8Array(digest));
+      const commitment = '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      setTxStatus('Submitting playDice transaction...');
+      const tx = await contract.playDice(
+        seedHandle,
+        seedProof,
+        guessHandle,
+        guessProof,
+        { value: entryFeeWei ?? parseEther('0.0002') }
+      );
+      await tx.wait();
+
+      setFairness({ seed: seedNumber, guess: guessNumber, commitment, txHash: tx.hash });
+      showToast('Dice played successfully!', 'success');
+      await refreshEncryptedState();
+    } catch (err: any) {
+      console.error('playDice failed:', err);
+      showToast('playDice failed: ' + (err?.message || String(err)), 'error');
+    } finally {
+      setLoading(false);
+      setTxStatus('');
+    }
+  };
+
+  // ... rest of the hook implementation
+};
+```
+
+**Key Benefits of @fhevm/react Integration:**
+
+1. **Automatic SDK Management**: No need to manually load or initialize the SDK
+2. **Instance Lifecycle**: Handles FHEVM instance creation and cleanup
+3. **Network Detection**: Automatically switches between mock and production
+4. **Error Handling**: Provides comprehensive error states
+5. **Key Storage**: Manages public key storage in IndexedDB automatically
+
+### 4.3 Decryption Process with @fhevm/react
+
+The decryption process uses the FHEVM instance:
+
+```typescript
+const userDecryptValue = async (ciphertextHandle: string, valueType: 'uint32' | 'bool'): Promise<number | boolean> => {
+  if (!fhevmInstance || !window.ethereum) throw new Error('FHEVM instance or Ethereum not available');
+  
+  const provider = new BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const signerAddress = await signer.getAddress();
+
+  // Generate keypair and prepare decryption request
+  const keypair = fhevmInstance.generateKeypair();
+  const handleContractPairs = [
+    { handle: ciphertextHandle, contractAddress }
+  ];
+  const startTimeStamp = Math.floor(Date.now() / 1000).toString();
+  const durationDays = '10';
+  const contractAddresses = [contractAddress];
+
+  // Create EIP-712 signature
+  const eip712 = fhevmInstance.createEIP712(
+    keypair.publicKey,
+    contractAddresses,
+    startTimeStamp,
+    durationDays
+  );
+
+  const signature = await signer.signTypedData(
+    eip712.domain,
+    { UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification },
+    eip712.message
+  );
+
+  // Decrypt the encrypted value
+  const result = await fhevmInstance.userDecrypt(
+    handleContractPairs,
+    keypair.privateKey,
+    keypair.publicKey,
+    signature.replace('0x', ''),
+    contractAddresses,
+    signerAddress,
+    startTimeStamp,
+    durationDays
+  );
+
+  const raw = result[ciphertextHandle];
+  if (valueType === 'bool') {
+    return raw === true || raw === 'true' || raw === 1 || raw === '1';
+  }
+  return Number(raw);
+};
+```
+
+**Key Decryption Features:**
+
+1. **User-Controlled**: Only the user who encrypted the data can decrypt it
+2. **EIP-712 Signatures**: Secure cryptographic signatures
+3. **Time-Limited**: Decryption permissions have expiration times
+4. **Contract-Specific**: Decryption tied to specific contract addresses
+
+### 4.4 Interactive Dice Component
+
+The `PlayDice.tsx` component provides the user interface:
+
+```typescript
+const PlayDice: React.FC<PlayDiceProps> = ({ loading, onPlay }) => {
+  const [seed, setSeed] = useState('');
+  const [guess, setGuess] = useState(1);
+  const [entropyReady, setEntropyReady] = useState(false);
+
+  return (
+    <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <h3>Roll the Dice</h3>
+        <p>Choose your number or let fate decide</p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
+        {/* 3D Dice Visualization */}
+        <div className="dice-stage" onMouseEnter={() => { if (!entropyReady) startEntropyCapture(); }}>
+          <div className={`dice-cube ${rolling ? 'dice-rolling' : ''}`}>
+            <div className="dice-face face-1">⚀</div>
+            <div className="dice-face face-2">⚁</div>
+            <div className="dice-face face-3">⚂</div>
+            <div className="dice-face face-4">⚃</div>
+            <div className="dice-face face-5">⚄</div>
+            <div className="dice-face face-6">⚅</div>
+          </div>
+        </div>
+
+        {/* Guess Selection */}
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {[1, 2, 3, 4, 5, 6].map((f) => (
+            <button
+              key={f}
+              onClick={() => { setGuess(f); setCurrentFace(f); setUserPicked(true); }}
+              className={`btn ${guess === f ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '12px 16px', fontSize: '2rem', minWidth: '60px' }}
+              disabled={loading}
+            >
+              {['⚀','⚁','⚂','⚃','⚄','⚅'][f-1]}
+            </button>
+          ))}
+        </div>
+
+        {/* Play Button */}
+        <button
+          onClick={async () => {
+            const chosen = userPicked ? guess : (Math.floor(Math.random() * 6) + 1);
+            setRolling(true);
+            setRolling(false);
+            onPlay(Number(seed || Date.now()), Number(chosen));
+          }}
+          disabled={loading || !entropyReady}
+          className={`btn ${loading ? 'btn-loading' : 'btn-primary'}`}
+          style={{ width: '100%', height: '50px', fontSize: '1rem', fontWeight: '600' }}
+        >
+          {loading ? 'Encrypting & Playing...' : 'Roll the Dice'}
+        </button>
+      </div>
+    </div>
+  );
+};
+```
+
+### 4.5 Results Display Component
+
+The `DiceResults.tsx` component shows encrypted results:
+
+```typescript
+const DiceResults: React.FC<DiceResultsProps> = ({
+  encrypted,
+  decrypted,
+  onDecryptRoll,
+  onDecryptGuess,
+  onDecryptWinner,
+  loading,
+  fairness
+}) => {
+  return (
+    <div className="card" style={{ maxWidth: '90rem', margin: '6.6px auto 0' }}>
+      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <h3>Encrypted Results</h3>
+        <p>Decrypt your results to see the outcome</p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* Last Dice Roll */}
+        <div style={{ padding: '20px', background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '12px' }}>
+                Last Dice Roll (encrypted)
+              </div>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--bg-tertiary)', padding: '12px 16px', borderRadius: '8px', wordBreak: 'break-all' }}>
+                {encrypted.lastDiceRoll}
+              </div>
+              {decrypted.lastDiceRoll != null && (
+                <div style={{ marginTop: '10px', padding: '8px 12px', background: 'var(--success-green)', color: 'var(--text-white)', borderRadius: '8px', fontWeight: '600' }}>
+                  {decrypted.lastDiceRoll}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={onDecryptRoll}
+              disabled={loading}
+              className={`btn ${loading ? 'btn-loading' : 'btn-secondary'}`}
+              style={{ fontSize: '0.9rem', padding: '10px 20px', minWidth: '120px' }}>
+              Decrypt
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Fairness Proof */}
+      {fairness && (
+        <div style={{ padding: '16px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-light)', borderRadius: '12px', marginTop: '20px' }}>
+          <div style={{ fontWeight: 600, marginBottom: '8px', color: 'var(--text-primary)' }}>Fairness Proof</div>
+          <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
+            Seed used: <span style={{ color: 'var(--text-primary)' }}>{fairness.seed}</span> • Guess: <span style={{ color: 'var(--text-primary)' }}>{fairness.guess}</span>
+          </div>
+          <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--bg-card)', padding: '8px 12px', border: '1px solid var(--border-light)', borderRadius: '6px', wordBreak: 'break-all', marginBottom: '8px' }}>
+            commitment (sha256(seed)) = {fairness.commitment}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+## Step 5: Complete Deployment Workflow
+
+### 5.1  Deployment Steps
+Considering you have created necessary files and scripts from the above.
+```bash
+# 1. Set up environment variables
+npx hardhat vars set MNEMONIC
+npx hardhat vars set INFURA_API_KEY
+Configure the hardhat.config.ts
+# 2. Navigate to hardhat template directory
+cd packages/fhevm-hardhat-template
+# 3. Install necessary dependencies
+npm install
+# 4. Compile the solidity code
+npx hardhat compile
+# 5. Run a test 
+npx hardhat test
+# 6. Deploy smart contracts to Sepolia
+npx hardhat deploy --network sepolia
+
+# 7. Generate ABI files for frontend
+npx ts-node run-postdeploy.ts sepolia FHEDiceGame
+
+# 8. Navigate back to root and start frontend
+cd ../..
+npm run dev:mock
+```
+
+The application will be available at `http://localhost:3000`
+
+### 5.2 Understanding the Postdeploy Script
+
+The postdeploy script is critical for:
+
+1. **Parsing deployment artifacts** from deployment directories
+2. **Generating TypeScript files** for frontend integration
+3. **Handling ABI synchronization** across networks
+4. **Creating contract address mappings** for different chains
+
+### 5.3 Verify Generated ABI Files
+
+After running the postdeploy script, verify these files exist in `packages/site/abi/`:
+
+- FHEDiceGameABI.ts
+- FHEDiceGameAddresses.ts
+
+### 5.4 Connect MetaMask
+
+1. Install MetaMask browser extension
+2. For Sepolia testnet configuration:
+   - **Network Name**: Sepolia Test Network
+   - **RPC URL**: `https://sepolia.infura.io/v3/YOUR_INFURA_KEY`
+   - **Chain ID**: `11155111`
+   - **Currency Symbol**: `ETH`
+3. Connect wallet to the application
+4. Ensure you have Sepolia ETH for gas fees
+
+## Step 6: Game Flow and User Experience
+
+### 6.1 Complete Game Flow
+
+1. **Connect Wallet**: Users connect their MetaMask wallet
+2. **Generate Entropy**: Mouse movement generates random entropy
+3. **Choose Guess**: Players select a dice face (1-6) or random
+4. **Encrypt & Submit**: Seed and guess are encrypted and submitted
+5. **Process Game**: Contract generates encrypted dice roll and determines winner
+6. **Decrypt Results**: Players decrypt their results
+
+### 6.2 Privacy Features
+
+- **Encrypted Inputs**: Player guesses and seeds are encrypted before submission
+- **Encrypted Processing**: All game logic runs on encrypted data
+- **User-Controlled Decryption**: Only the player can decrypt their results
+- **Fairness Proofs**: Cryptographic commitments ensure fairness
+
+## Step 7: Advanced Features
+
+### 7.1 Fairness Proofs
+
+The application implements cryptographic fairness proofs:
+
+```typescript
+// Compute fairness commitment: sha256(seed)
+const buffer = new TextEncoder().encode(String(seedNumber));
+const digest = await window.crypto.subtle.digest('SHA-256', buffer);
+const bytes = Array.from(new Uint8Array(digest));
+const commitment = '0x' + bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+
+setFairness({ 
+  seed: seedNumber, 
+  guess: guessNumber, 
+  commitment, 
+  txHash: tx.hash 
+});
+```
+
+### 7.2 Error Handling and User Feedback
+
+Comprehensive error handling with user-friendly messages:
+
+```typescript
+try {
+  // ... FHEVM operations
+} catch (err: any) {
+  console.error('playDice failed:', err);
+  showToast('playDice failed: ' + (err?.message || String(err)), 'error');
+} finally {
+  setLoading(false);
+  setTxStatus('');
+}
+```
+
+
+
+## Step 8: Key Learnings and Best Practices
+
+### 8.1 FHEVM Integration Best Practices
+
+1. **Always initialize the SDK**: Ensure proper initialization before use
+2. **Handle encryption errors**: Implement robust error handling
+3. **Manage permissions**: Use `FHE.allow()` appropriately
+4. **Validate inputs**: Always validate encrypted inputs before processing
+
+## Conclusion
+
+You've successfully built a privacy-preserving dice game using Zama's FHEVM technology. This tutorial covered:
+
+- Smart contract development with FHEVM
+- Frontend integration with @fhevm/react
+- Encryption and decryption workflows
+- Privacy-preserving game mechanics
+- Frontend deployment
+---
+
+import { TutorialQuiz } from "../components";
+
+---
+
+## Quiz
+
+<TutorialQuiz
+  title="FHEVM Relayer SDK Quiz"
+  description="Test your understanding of building privacy-preserving applications with Zama's FHEVM Relayer SDK"
+  questions={[
+    {
+      id: "fhevm-relayer-1",
+      topic: "FHEVM Basics",
+      question: "What is the primary purpose of the Zama FHEVM Relayer SDK?",
+      options: [
+        "To provide faster blockchain transactions",
+        "To enable fully homomorphic encryption on Ethereum",
+        "To reduce gas costs for smart contracts",
+        "To create better user interfaces"
+      ],
+      correctAnswer: 1,
+      explanation:
+        "The Zama FHEVM Relayer SDK enables fully homomorphic encryption on Ethereum, allowing computations on encrypted data without revealing the underlying values."
+    },
+    {
+      id: "fhevm-relayer-2",
+      topic: "Smart Contract Development",
+      question: "In the FHEDiceGame contract, what does the `FHE.allow()` function do?",
+      options: [
+        "Allows anyone to call the contract functions",
+        "Grants decryption permissions to specific users",
+        "Sets the contract owner",
+        "Validates input parameters"
+      ],
+      correctAnswer: 1,
+      explanation:
+        "FHE.allow() grants decryption permissions to specific users, enabling them to decrypt encrypted values they have access to."
+    },
+    {
+      id: "fhevm-relayer-3",
+      topic: "Frontend Integration",
+      question: "What is the main benefit of using the @fhevm/react package?",
+      options: [
+        "It provides better TypeScript support",
+        "It automatically manages FHEVM SDK loading and instance creation",
+        "It reduces bundle size",
+        "It provides better error messages"
+      ],
+      correctAnswer: 1,
+      explanation:
+        "The @fhevm/react package automatically manages FHEVM SDK loading, instance creation, and lifecycle, simplifying the integration process."
+    },
+    {
+      id: "fhevm-relayer-4",
+      topic: "Encryption Process",
+      question: "What are the two main components needed for encrypted inputs in FHEVM?",
+      options: [
+        "Public key and private key",
+        "Handle and proof",
+        "Address and signature",
+        "ABI and contract address"
+      ],
+      correctAnswer: 1,
+      explanation:
+        "Encrypted inputs in FHEVM require both a handle (the encrypted data reference) and a proof (cryptographic proof of the encryption)."
+    },
+    {
+      id: "fhevm-relayer-5",
+      topic: "Decryption Process",
+      question: "What type of signature is used for secure decryption requests in FHEVM?",
+      options: [
+        "ECDSA signature",
+        "EIP-712 typed data signature",
+        "RSA signature",
+        "Ed25519 signature"
+      ],
+      correctAnswer: 1,
+      explanation:
+        "FHEVM uses EIP-712 typed data signatures for secure decryption requests, providing structured and verifiable signatures."
+    },
+    {
+      id: "fhevm-relayer-6",
+      topic: "Privacy Features",
+      question: "What makes the dice game truly privacy-preserving?",
+      options: [
+        "The game runs on a private blockchain",
+        "All game logic runs on encrypted data without revealing values",
+        "The game uses anonymous accounts",
+        "The game encrypts user passwords"
+      ],
+      correctAnswer: 1,
+      explanation:
+        "The game is privacy-preserving because all game logic (dice roll generation, comparison, winner determination) runs on encrypted data without ever revealing the actual values."
+    }
+  ]}
+/>
+
+---
+
+## Resources
+
+- [FHEVM Documentation](https://docs.zama.ai/protocol/solidity-guides/)
+- [Zama Relayer SDK](https://docs.zama.ai/protocol/relayer-sdk-guides/)
+- [FHEVM Discord Community](https://discord.com/invite/zama)
+- [GitHub Repository to this project](https://github.com/chimmykk/hello-fhevm-dice)
+
+---

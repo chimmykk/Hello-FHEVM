@@ -1,4 +1,4 @@
-# DiceGameDapp
+# DiceGameDapp Using CDN
 
 A simple Dice Game DApp powered by FHEVM smart contracts with fully homomorphic encryption.
 
@@ -22,7 +22,6 @@ frontend/
 ├── public/
 ├── src/
 │   ├── components/
-│   │   └── Playground.js
 │   ├── hooks/
 │   ├── App.css
 │   ├── App.js
@@ -57,7 +56,19 @@ cd frontend
 ```
 Now Install the required dependencies
 ``` js
-npm install @zama-fhe/relayer-sdk@^0.2.0 ethers@^6.15.0
+npm install 
+```
+
+Using directly the library
+Setup the library
+@zama-fhe/relayer-sdk consists of multiple files, including WASM files and WebWorkers, which can make packaging these components correctly in your setup cumbersome. To simplify this process, especially if you're developing a dApp with server-side rendering (SSR), we recommend using our CDN.
+Include this line at the top of your project.
+Using UMD CDN
+```
+<script
+  src="https://cdn.zama.ai/relayer-sdk-js/0.2.0/relayer-sdk-js.umd.cjs"
+  type="text/javascript"
+></script>
 ```
 
 ### Update the project code
@@ -2245,6 +2256,8 @@ npm run start
  You have successfully completed the journey of Deploying a 
 Dapps using FHEVM powered by Zama
 
+Give a try to the below question on what you have understand!
+
 ---
 
 import { TutorialQuiz } from "../components";
@@ -2320,3 +2333,9 @@ import { TutorialQuiz } from "../components";
     }
   ]}
 />
+
+
+## Resources
+
+- [FHEVM Documentation](https://docs.zama.ai/protocol/solidity-guides/)
+- [GitHub Repository to this project ](https://github.com/chimmykk/fhevm-dice-dapp)

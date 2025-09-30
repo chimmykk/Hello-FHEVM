@@ -63,10 +63,7 @@ export default defineConfig({
           text: `Learn FHEVM`,
           link: `/introduction`,
         },
-        {
-          text: "Changelog",
-          link: "https://github.com/",
-        },
+     
         {
           text: "Contributing",
           link: "https://github.com/",
