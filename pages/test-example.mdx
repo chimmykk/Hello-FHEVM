@@ -276,76 +276,63 @@ ebool private _isWinner;          // Encrypted win status
 - Node.js 18+ (LTS version)
 - MetaMask wallet
 - Sepolia testnet ETH
-- Hardhat development framework
 
-### **Installation:**
+### **Quick Start:**
 
 ```bash
-# Clone the repository
+# 1. Clone and setup
 git clone https://github.com/chimmykk/fhevm-dice-dapp
 cd fhevm-dice-dapp
-
-# Install dependencies
 npm install
 
-# Setup environment variables
+# 2. Configure environment
 cp .env.example .env
-# Add your MNEMONIC and INFURA_API_KEY OR
-# Update the hardhat.config.ts
+# Add your MNEMONIC and INFURA_API_KEY
 
-# Compile contracts
+# 3. Build and test
 npx hardhat compile
-
-# Run tests
 npx hardhat test
 
-# Deploy to localhost (start hardhat node first)
-npx hardhat node
-# Then in another terminal:
-npx hardhat deploy --network localhost
+# 4. Deploy (choose one)
+# Local development:
+npx hardhat node  # Terminal 1
+npx hardhat deploy --network localhost  # Terminal 2
 
-# Deploy to Sepolia
+# Or deploy to Sepolia:
 npx hardhat deploy --network sepolia
 
-```
-
-
-
-### **Frontend Setup:**
-On the same project folder navigate for /frontend folder and install dependencies and start the development server
-```bash
+# 5. Start frontend
 cd frontend
 npm install
 npm start
-
 ```
-
-
 
 ## How to Play
 
 1. **Connect Wallet**: Connect MetaMask to Sepolia testnet
-2. **Generate Entropy**: Hover mouse over dice area for 2 seconds
+2. **Generate Entropy**: Hover mouse over dice area for 2 seconds  
 3. **Make Guess**: Click a dice face (1-6) or let system choose randomly
 4. **Roll Dice**: Click "Roll Dice" to submit encrypted guess
-5. **Wait**: Transaction processes on blockchain
-6. **Decrypt**: Click "Decrypt All" to reveal results
-7. **Verify**: Check if your guess matched the encrypted dice roll!
+5. **Decrypt Results**: Click "Decrypt All" to reveal your outcome
 
-##  Testing & Verification
+## Testing & Verification
 
-### **Unit Tests:**
+### **Automated Testing:**
 ```bash
 npx hardhat test
 ```
 
 ### **Manual Testing:**
 ```bash
-# Play game via CLI
+# Play via CLI (choose your network)
+# For Sepolia testnet:
 npx hardhat --network sepolia task:play-dice --guess 4 --seed 12345
 
-# Check results
-Use Frontend FHevm.js to decrypt the result.
+# For local hardhat node:
+npx hardhat --network localhost task:play-dice --guess 4 --seed 12345
+
+# View results
+# Use the frontend to decrypt and verify results
 ```
 
 ### **Frontend Testing:**
