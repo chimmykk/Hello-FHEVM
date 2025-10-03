@@ -12,39 +12,65 @@ and determining the results of the game.
 - FHEVM SDK & Hardhat Plugin
 - Knowledge of wallet integration (MetaMask.js/Ethers.js) for connecting wallet extensions to DApps
 
-## Project Structure
-::::steps
-### Frontend Directory Structure
+## Project Structure Root
+This project uses the [fhevm-hardhat-template](https://github.com/zama-ai/fhevm-hardhat-template) as its foundation.
 
+We have integrated a frontend into this template to create a complete DApp.
 ```
-frontend/
-├── node_modules/
-├── public/
-├── src/
-│   ├── components/
-│   ├── hooks/
-│   ├── App.css
-│   ├── App.js
-│   └── index.js
-├── package.json
+fhevm-dice-dapp-cdn/
+├── contracts/                # Solidity contracts
+│   └── FHEDiceGame.sol
+│  
+├── deploy/                   # Deployment scripts
+│   └── deploy.ts
+│
+├── frontend/                 # React frontend (dApp UI)
+│   ├── node_modules/
+│   ├── public/               # Static assets (favicon, index.html, etc.)
+│   ├── src/
+│   │   ├── components/       # React UI components
+│   │   ├── hooks/            # Custom React hooks (e.g. useFHE)
+│   │   ├── App.css
+│   │   ├── App.js            # Main React app
+│   │   └── index.js          # React entry point
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── pnpm-lock.yaml
+│   └── README.md
+│
+├── tasks/                    # Hardhat tasks (custom CLI tasks)
+│   └── FHEDiceGame.ts
+│
+├── test/                     # Hardhat/ethers test scripts
+│    └── FHEDiceGame.ts
+│   
+├── hardhat.config.ts         # Hardhat config
+├── package.json              # Root package.json for Hardhat project
 ├── package-lock.json
-├── pnpm-lock.yaml
+├── tsconfig.json             # TypeScript config
 └── README.md
 ```
+::::steps
+
 
 ### Directory Overview
-
-- **`node_modules/`** - Dependencies installed by npm/pnpm
-- **`public/`** - Static assets and HTML template
-- **`src/`** - Source code directory
-  - **`components/`** - Reusable React components (including Playground component)
-  - **`hooks/`** - Custom React hooks for wallet connection and FHEVM integration
-  - **`App.css`** - Main application styles
-  - **`App.js`** - Main App component
-  - **`index.js`** - Application entry point
-- **`package.json`** - Project configuration and dependencies
-- **`package-lock.json`** - Locked dependency versions (npm)
-- **`pnpm-lock.yaml`** - Locked dependency versions (pnpm)
+- **`contracts/`** - Contains all Solidity smart contracts (main game logic + encryption examples)
+- **`deploy/`** - Scripts to deploy contracts onto testnets/mainnet
+- **`frontend/`** - Full React-based dApp for interacting with the contracts
+  - **`node_modules/`** - Installed dependencies
+  - **`public/`** - Static files like favicon and `index.html`
+  - **`src/`** - Application source code
+    - **`components/`** - Reusable UI components (like Dice UI, results display, Playground)
+    - **`hooks/`** - Custom React hooks for wallet connection & FHE interactions
+    - **`App.css`** - Main CSS
+    - **`App.js`** - Root React component
+    - **`index.js`** - Entry point
+  - **`package.json`** - Frontend dependencies & scripts
+  - **`package-lock.json`** / **`pnpm-lock.yaml`** - Locked dependency versions
+- **`tasks/`** - Custom Hardhat CLI tasks
+- **`test/`** - Tests for contracts (Hardhat + ethers.js)
+- **`hardhat.config.ts`** - Hardhat setup
+- **`README.md`** - Documentation for the entire project
 
 
 ### Initiate a new project
@@ -1645,7 +1671,7 @@ export const useWallet = (showToast, contractAddress) => {
 };
 
 ```
-## FOR CSS USE THIS
+## CSS 
 under src/app.css
 
 ``` css

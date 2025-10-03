@@ -397,17 +397,31 @@ func.tags = ["FHEDiceGame"];
 ```
 
 
-## Now let's compile-->test-->deploy
-To compile
-``` js
+## Now let's compile → test → deploy
+
+### To compile
+```bash
 npx hardhat compile
 ```
-To Test
-``` js
+
+### To test
+```bash
 npx hardhat test
 ```
-To deploy
-``` js 
+
+### To deploy on localhost hardhat
+Start a local Hardhat node (new terminal):
+```bash
+npx run hardhat-node
+```
+
+Then deploy:
+```bash
+npx hardhat deploy --network localhost
+```
+
+### To deploy on Sepolia
+```bash
 npx hardhat deploy --network sepolia
 ```
 

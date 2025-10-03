@@ -7,7 +7,7 @@ A privacy-preserving dice guessing game built with **Zama's FHEVM (Fully Homomor
 - [GitHub Repository to this project ](https://github.com/chimmykk/fhevm-dice-dapp-cdn)
 - Note this project structure is for CDN integration.
 ```
-fhevm-dice-dapp/
+fhevm-dice-dapp-cdn/
 ├── contracts/             # Smart contracts
 ├── frontend/              # React application
 ├── tasks/                 # Hardhat tasks
@@ -22,7 +22,7 @@ fhevm-dice-dapp/
 - [GitHub Repository to this project ](https://github.com/chimmykk/hello-fhevm-dice-sdk)
 - Note this project structure is for SDK integration.
 ```
-hello-fhevm-dice/
+hello-fhevm-dice-sdk/
 ├── LICENSE
 ├── README.md
 ├── package.json
@@ -299,6 +299,11 @@ npx hardhat compile
 # Run tests
 npx hardhat test
 
+# Deploy to localhost (start hardhat node first)
+npx hardhat node
+# Then in another terminal:
+npx hardhat deploy --network localhost
+
 # Deploy to Sepolia
 npx hardhat deploy --network sepolia
 
@@ -443,10 +448,13 @@ import { TutorialQuiz } from "../components";
 ---
 ##  Live Demo
 
-- **Deployed Contract**: `0xA6915c97f44f1708e37dD871CCE991fD6D45E943`
-- (Sepolia)
-**Frontend**: [Using CDN](https://hello-fhevm-game.vercel.app)
-[Using SDK](https://hello-fhevm-dice-site-d7kd.vercel.app/)
+- **Deployed Contract (Sepolia)**:
+  - CDN Version: `0xA6915c97f44f1708e37dD871CCE991fD6D45E943`
+  - SDK Version: `0x31630746e870D3D57e8B708ac479f269e1Da4c10`
+
+- **Frontend Demos**:
+  - [CDN Integration](https://hello-fhevm-game.vercel.app)
+  - [SDK Integration](https://hello-fhevm-dice-site-d7kd.vercel.app/)
 
 ## Learn More
 

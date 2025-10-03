@@ -759,14 +759,26 @@ npx hardhat test
 
 ## Step 2: Deployment and ABI Generation
 
-### 2.1 Deploy to Sepolia
+### 2.1 Deploy to Local Hardhat Node
+
+Start a local Hardhat node (new terminal):
+```bash
+npx hardhat node
+```
+
+Then deploy to localhost:
+```bash
+npx hardhat deploy --network localhost
+```
+
+### 2.2 Deploy to Sepolia
 
 ```bash
 # Deploy smart contracts to Sepolia testnet
 npx hardhat deploy --network sepolia
 ```
 
-### 2.2 Generate ABI Files
+### 2.3 Generate ABI Files
 
 After deployment, generate the ABI files for frontend integration. Create a `run-postdeploy.ts` file in the hardhat template directory:
 
