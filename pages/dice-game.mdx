@@ -580,6 +580,21 @@ tx:0xd69aa9095b34e8832451c8359af64f477f5c820063f59fb21e21c9062fd89b7e status=1
 FHEDiceGame playDice(guess=6, seed=65463) succeeded!
 ```
 
+Now let's us check the result too!
+``` js
+npx hardhat --network sepolia task:dice-result --address {contract address}
+```
+
+Expected output:
+```
+FHEDiceGame: 0xA6915c97f44f1708e37dD871CCE991fD6D45E943
+Encrypted Dice Roll   : 0x
+Clear Dice Roll       : 4
+Encrypted Winner Stat : 0x
+Clear Winner Stat     : false/true
+```
+
+
 ## Understanding the Dice Generation Algorithm
 The `_generateDiceRoll` function (lines 73-83) performs the following encrypted operations:
 We used seed (random numbers) and salt to randomize the outcome 
@@ -605,7 +620,7 @@ Refer: Line of Code 73-83 on FHEDiceGame.sol
 
 ## Next Steps is Decrypting Game Results and Determining Winners.
 
-Using FHevm.js you can decrypt the result and check if you win or lose
+Using FHevm.js now you can decrypt the result on frontend and check if you win or lose.
 
 ---
 
